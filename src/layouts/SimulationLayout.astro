@@ -1,0 +1,55 @@
+---
+import Layout from './Layout.astro';
+import Sidebar from '../components/Sidebar.astro';
+
+interface Props {
+  title: string;
+  currentStep: number;
+}
+
+const { title, currentStep } = Astro.props;
+---
+
+<Layout title={title}>
+  <div class="flex min-h-screen bg-[#020617]">
+    <div class="shrink-0">
+      <Sidebar currentStep={currentStep} />
+    </div>
+    
+    <main class="flex-1 min-w-0 p-6 md:p-10 relative h-screen overflow-y-auto custom-scrollbar">
+      <!-- Progress Bar (Top) -->
+      <div class="absolute top-0 left-0 right-0 h-1 bg-slate-900 z-50">
+        <div 
+          class="h-full bg-cyan-500 shadow-[0_0_10px_rgba(34,211,238,0.5)] transition-all duration-700"
+          style={`width: ${(currentStep / 7) * 100}%`}
+        ></div>
+      </div>
+
+      <div class="max-w-6xl mx-auto space-y-8 animate-in fade-in duration-500">
+        <slot />
+      </div>
+    </main>
+  </div>
+</Layout>
+
+<style is:global>
+  .animate-in { animation: fadeIn 0.5s ease-out; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  
+  /* Generic Card Style for Steps */
+  .step-card {
+    background: rgba(15, 23, 42, 0.4);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 1.5rem;
+    padding: 2rem;
+    box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.6);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+  .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+  .custom-scrollbar::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 10px; }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #334155; }
+</style>

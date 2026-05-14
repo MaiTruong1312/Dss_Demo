@@ -1,0 +1,286 @@
+---
+import SimulationLayout from '../layouts/SimulationLayout.astro';
+---
+
+<SimulationLayout title="BƯỚC 3: Hashing SHA-256 - Crypto Wizard" currentStep={3}>
+  <div class="space-y-8 pb-20">
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="text-3xl font-black text-white">BƯỚC 3: Tạo mã băm (Hashing)</h1>
+        <p class="text-slate-400">Tạo "dấu vân tay số" độc nhất bằng toán học nhị phân và các hàm logic.</p>
+      </div>
+      <div id="status-tag" class="px-4 py-1.5 bg-amber-500/10 border border-amber-500/20 rounded-full text-[10px] font-black uppercase text-amber-500 tracking-widest">
+        Chờ bắt đầu
+      </div>
+    </div>
+
+    <!-- Part 1: Mathematical Engine (New Section) -->
+    <div class="step-card border-orange-500/10 overflow-hidden relative">
+        <div class="flex flex-col lg:flex-row gap-8 items-center">
+            <!-- Math Logic Visual -->
+            <div class="w-full lg:w-1/2 space-y-4">
+                <div class="text-[10px] uppercase font-black tracking-widest text-orange-400 mb-2">Cỗ máy toán học nhị phân (Logic Gates)</div>
+                <div class="bg-slate-950 p-6 rounded-3xl border border-white/5 grid grid-cols-2 gap-4 relative overflow-hidden">
+                    <!-- Animating Bits -->
+                    <div id="math-bits-stream" class="absolute inset-0 pointer-events-none opacity-20"></div>
+                    
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between bg-white/5 p-2 rounded-lg border border-white/5">
+                            <span class="text-[9px] font-mono text-slate-500">OP: XOR (⊕)</span>
+                            <span id="math-xor" class="text-[10px] font-mono text-white">0110...</span>
+                        </div>
+                        <div class="flex items-center justify-between bg-white/5 p-2 rounded-lg border border-white/5">
+                            <span class="text-[9px] font-mono text-slate-500">OP: ADD (+)</span>
+                            <span id="math-add" class="text-[10px] font-mono text-white">A4C1...</span>
+                        </div>
+                        <div class="flex items-center justify-between bg-white/5 p-2 rounded-lg border border-white/5">
+                            <span class="text-[9px] font-mono text-slate-500">OP: ROT (∅)</span>
+                            <span id="math-rot" class="text-[10px] font-mono text-white">3F2A...</span>
+                        </div>
+                    </div>
+                    <div class="space-y-3">
+                         <div class="flex items-center justify-between bg-white/5 p-2 rounded-lg border border-white/5">
+                            <span class="text-[9px] font-mono text-slate-500">W[i] (Sched)</span>
+                            <span id="math-wi" class="text-[10px] font-mono text-orange-400">0000...</span>
+                        </div>
+                        <div class="flex items-center justify-between bg-white/5 p-2 rounded-lg border border-white/5">
+                            <span class="text-[9px] font-mono text-slate-500">H[a-h] (State)</span>
+                            <span id="math-ha" class="text-[10px] font-mono text-cyan-400">6A09...</span>
+                        </div>
+                        <div class="flex items-center justify-between bg-white/5 p-2 rounded-lg border border-white/5">
+                            <span class="text-[9px] font-mono text-slate-500">Σ (Sigma)</span>
+                            <span id="math-sigma" class="text-[10px] font-mono text-purple-400">E5B2...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- KDF Concept (Integrated) -->
+            <div class="w-full lg:w-1/2 space-y-4">
+                <div class="text-[10px] uppercase font-black tracking-widest text-blue-400">Biến đổi Khóa (KDF Phase)</div>
+                <div class="flex items-center justify-center gap-6 bg-slate-900/50 p-6 rounded-3xl border border-white/5">
+                    <div id="shared-secret-input" class="text-[9px] font-mono text-slate-500 break-all w-24 text-center truncate italic">Shared Secret</div>
+                    <div class="w-8 h-8 rounded-full border border-blue-500/30 flex items-center justify-center text-blue-400 animate-spin-slow">SHA</div>
+                    <div id="derived-key-output" class="text-[9px] font-mono text-emerald-500/50 break-all w-24 text-center italic">AES Key</div>
+                </div>
+                <p class="text-[9px] text-slate-500 italic text-center">Mã băm không chỉ dành cho dữ liệu mà còn để "nén" Shared Secret thành khóa AES chuẩn.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Part 2: Message Hashing Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <!-- Input Visualizer -->
+      <div class="step-card border-amber-500/10 space-y-6">
+        <div class="text-[10px] uppercase font-black tracking-widest text-amber-500">Thông điệp gốc (Data Integrity)</div>
+        <div id="message-container" class="bg-slate-950/50 p-6 rounded-2xl min-h-[220px] border border-white/5 relative overflow-hidden">
+            <div id="char-grid" class="flex flex-wrap gap-2"></div>
+        </div>
+        <div class="flex items-center gap-4">
+             <div id="active-char-box" class="w-12 h-12 bg-amber-500/20 border-2 border-amber-500 text-amber-400 flex items-center justify-center font-black text-2xl rounded-xl hidden animate-pulse shadow-[0_0_20px_rgba(245,158,11,0.2)]"></div>
+             <div id="char-status" class="text-xs text-slate-400 font-bold uppercase tracking-wider">CHỜ BẮT ĐẦU...</div>
+        </div>
+      </div>
+
+      <!-- Hash Visualizer -->
+      <div class="step-card border-cyan-500/10 space-y-6 relative">
+        <div class="text-[10px] uppercase font-black tracking-widest text-cyan-500">Mã băm SHA-256 (Message Digest)</div>
+        <div id="hash-box" class="bg-slate-950 p-6 rounded-2xl min-h-[220px] border border-white/5 font-mono text-sm break-all leading-relaxed text-slate-600 flex items-center justify-center italic text-center">
+            Mã băm sẽ xuất hiện tại đây...
+        </div>
+        
+        <div class="grid grid-cols-3 gap-2">
+            {[
+                { label: 'DUY NHẤT', icon: 'M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z', color: 'emerald' },
+                { label: 'MỘT CHIỀU', icon: 'M13 18l6-6-6-6M5 12h14', color: 'blue' },
+                { label: 'CỐ ĐỊNH', icon: 'M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3', color: 'cyan' }
+            ].map(p => (
+                <div class="p-2 bg-white/5 rounded-lg border border-white/5 flex flex-col items-center gap-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" class={`text-${p.color}-400`}>
+                        <path d={p.icon}/>
+                    </svg>
+                    <span class="text-[8px] font-black text-slate-500">{p.label}</span>
+                </div>
+            ))}
+        </div>
+      </div>
+    </div>
+
+    <!-- Control Area -->
+    <div class="flex justify-center flex-col items-center gap-4">
+       <button id="action-btn" class="px-12 py-5 bg-white text-slate-950 font-black rounded-2xl hover:bg-amber-400 transition-all shadow-2xl flex items-center gap-3 group">
+          <span>BẮT ĐẦU QUY TRÌNH BĂM</span>
+          <svg class="group-hover:translate-x-1 transition-transform" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12h14m-7-7 7 7-7 7"/></svg>
+        </button>
+    </div>
+
+    <!-- Educational Content Accordion -->
+    <div class="max-w-4xl mx-auto space-y-4">
+        <details class="group bg-slate-900/50 border border-white/5 rounded-3xl overflow-hidden shadow-xl" open>
+            <summary class="flex items-center justify-between p-6 cursor-pointer hover:bg-white/5 transition-all">
+                <div class="flex items-center gap-4">
+                    <div class="w-8 h-8 rounded-full bg-amber-500/20 flex items-center justify-center text-amber-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M21 16V8a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2z"/><path d="M7 21h10"/><path d="M12 18v3"/></svg>
+                    </div>
+                    <span class="font-black text-xs uppercase tracking-widest text-slate-200">Bên trong hàm băm SHA-256 có gì?</span>
+                </div>
+                <svg class="w-5 h-5 text-slate-500 group-open:rotate-180 transition-transform" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+            </summary>
+            <div class="px-8 pb-8 space-y-8 text-sm text-slate-400 leading-relaxed text-justify md:columns-2 gap-12">
+                <div class="space-y-3">
+                    <h4 class="font-black text-orange-400 text-xs uppercase">TOÁN HỌC NHỊ PHÂN</h4>
+                    <p>Hashing không phải là phép màu, nó là <strong>Toán học</strong>. SHA-256 chia dữ liệu thành các khối 512-bit và thực hiện hàng loạt phép toán:</p>
+                    <ul class="space-y-1 text-xs">
+                        <li>• <strong>XOR (⊕):</strong> Phép loại trừ nhị phân.</li>
+                        <li>• <strong>ROT (Dịch bit):</strong> Xoay vòng các bit sang trái/phải.</li>
+                        <li>• <strong>ADD (Cộng mod 2<sup>32</sup>):</strong> Phép cộng số nguyên lớn.</li>
+                    </ul>
+                </div>
+                <div class="space-y-3">
+                    <h4 class="font-black text-cyan-400 text-xs uppercase">TẠI SAO LẠI BẢO MẬT?</h4>
+                    <p>Vì các phép toán này được lặp lại <strong>64 vòng</strong> (rounds). Mỗi vòng lại trộn dữ liệu cũ với dữ liệu mới theo một hằng số toán học duy nhất.</p>
+                    <p>Chỉ cần 1 bit ở đầu vào thay đổi, kết quả cuối cùng sẽ hoàn toàn khác biệt (Avalanche Effect).</p>
+                </div>
+            </div>
+        </details>
+    </div>
+  </div>
+</SimulationLayout>
+
+<script>
+  import { hashSHA256, bufferToHex } from '../utils/crypto.js';
+  import { loadState, saveState } from '../utils/state.js';
+
+  const actionBtn = document.getElementById('action-btn');
+  const charGrid = document.getElementById('char-grid');
+  const activeCharBox = document.getElementById('active-char-box');
+  const charStatus = document.getElementById('char-status');
+  const hashBox = document.getElementById('hash-box');
+  const statusTag = document.getElementById('status-tag');
+  
+  const sharedSecretInput = document.getElementById('shared-secret-input');
+  const derivedKeyOutput = document.getElementById('derived-key-output');
+
+  // Math Display Elements
+  const mXor = document.getElementById('math-xor');
+  const mAdd = document.getElementById('math-add');
+  const mRot = document.getElementById('math-rot');
+  const mWi = document.getElementById('math-wi');
+  const mHa = document.getElementById('math-ha');
+  const mSigma = document.getElementById('math-sigma');
+
+  let isAnimating = false;
+
+  async function init() {
+    const state = await loadState();
+    if (sharedSecretInput) sharedSecretInput.textContent = state.sharedHex || "N/A";
+    
+    // Render initial message grid
+    state.msg.split('').forEach((char, i) => {
+        const span = document.createElement('span');
+        span.className = 'w-8 h-8 flex items-center justify-center bg-white/5 border border-white/10 rounded text-slate-400 text-sm font-bold transition-all';
+        span.textContent = char;
+        charGrid?.appendChild(span);
+    });
+  }
+
+  function randomHex(len = 8) {
+      return Array.from({length: len}, () => Math.floor(Math.random() * 16).toString(16)).join('').toUpperCase();
+  }
+
+  function updateMathDisplay() {
+      if (mXor) mXor.textContent = randomHex(8);
+      if (mAdd) mAdd.textContent = randomHex(8);
+      if (mRot) mRot.textContent = randomHex(8);
+      if (mWi) mWi.textContent = randomHex(8);
+      if (mHa) mHa.textContent = randomHex(8);
+      if (mSigma) mSigma.textContent = randomHex(8);
+  }
+
+  actionBtn?.addEventListener('click', async () => {
+    if (isAnimating) return;
+    
+    const state = await loadState();
+    const msg = state.msg;
+    
+    isAnimating = true;
+    actionBtn.disabled = true;
+    charGrid.innerHTML = '';
+    hashBox.innerHTML = 'Khởi tạo Math Engine...';
+    hashBox.classList.remove('italic', 'text-slate-600');
+    activeCharBox.classList.remove('hidden');
+
+    statusTag.textContent = "Đang tính toán";
+    statusTag.classList.replace("bg-amber-500/10", "bg-orange-500/10");
+    statusTag.classList.replace("text-amber-500", "text-orange-500");
+
+    // --- PHASE 1: KDF (Slowed) ---
+    derivedKeyOutput.textContent = "Computing KDF...";
+    for(let i=0; i<5; i++) {
+        updateMathDisplay();
+        await new Promise(r => setTimeout(r, 200));
+    }
+    const kdfBuffer = await hashSHA256(state.sharedHex || "SYSTEM_SEED");
+    const kdfHex = bufferToHex(kdfBuffer);
+    state.aesKeyHex = kdfHex;
+    derivedKeyOutput.textContent = kdfHex.substring(0, 16) + "...";
+    derivedKeyOutput.classList.replace('text-emerald-500/50', 'text-emerald-400');
+    derivedKeyOutput.classList.add('font-black');
+
+    // --- PHASE 2: Message Hashing SLOWED ---
+    msg.split('').forEach((char, i) => {
+        const span = document.createElement('span');
+        span.className = 'w-8 h-8 flex items-center justify-center bg-white/5 border border-white/10 rounded text-slate-400 text-sm font-bold transition-all';
+        span.textContent = char;
+        span.id = `char-${i}`;
+        charGrid.appendChild(span);
+    });
+
+    for (let i = 0; i < msg.length; i++) {
+        const char = msg[i];
+        const span = document.getElementById(`char-${i}`);
+        
+        charStatus.textContent = `Processing byte: '${char}'`;
+        activeCharBox.textContent = char;
+
+        span.classList.replace('bg-white/5', 'bg-orange-500/30');
+        span.classList.replace('border-white/10', 'border-orange-500/50');
+        span.classList.replace('text-slate-400', 'text-orange-400');
+
+        // Scramble animation + Math update
+        for(let j=0; j<3; j++) {
+            updateMathDisplay();
+            hashBox.textContent = "OP_ROUND: " + randomHex(40);
+            await new Promise(r => setTimeout(r, 100)); // 300ms total per char
+        }
+    }
+
+    // PHASE 3: Finalize
+    const hashBuffer = await hashSHA256(msg);
+    const hex = bufferToHex(hashBuffer);
+
+    state.hashHex = hex;
+    state.step = 4;
+    await saveState(state);
+
+    charStatus.textContent = "Hàm băm đã hội tụ! ✅";
+    activeCharBox.classList.add('hidden');
+    hashBox.textContent = hex.toUpperCase();
+    hashBox.classList.add('text-white', 'text-lg', 'font-black');
+
+    statusTag.textContent = "Hoàn tất";
+    statusTag.classList.replace("bg-orange-500/10", "bg-emerald-500/10");
+    statusTag.classList.replace("text-orange-500", "text-emerald-500");
+
+    actionBtn.innerHTML = `
+      <span>TIẾP TỤC ĐẾN BƯỚC 4</span>
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12h14m-7-7 7 7-7 7"/></svg>
+    `;
+    actionBtn.classList.replace('bg-white', 'bg-emerald-500');
+    actionBtn.disabled = false;
+    actionBtn.onclick = () => window.location.href = '/step4-signing';
+    isAnimating = false;
+  });
+
+  window.addEventListener('DOMContentLoaded', init);
+</script>

@@ -1,0 +1,253 @@
+---
+import SimulationLayout from '../layouts/SimulationLayout.astro';
+---
+
+<SimulationLayout title="BƯỚC 2: Trao đổi Khóa - Crypto Wizard" currentStep={2}>
+  <div class="space-y-8 pb-20">
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="text-3xl font-black text-white">BƯỚC 2: Trao đổi Public Key</h1>
+        <p class="text-slate-400">Alice và Bob gửi khóa công khai cho nhau để tạo khóa bí mật chung (Shared Secret).</p>
+      </div>
+      <div id="status-tag" class="px-4 py-1.5 bg-amber-500/10 border border-amber-500/20 rounded-full text-[10px] font-black uppercase text-amber-500 tracking-widest">
+        Chờ bắt đầu
+      </div>
+    </div>
+
+    <!-- Exchange Visualization -->
+    <div class="step-card min-h-[500px] flex flex-col items-center justify-between relative overflow-hidden">
+      <!-- Network Background Decor -->
+      <div class="absolute inset-0 opacity-[0.02] pointer-events-none">
+          <svg width="100%" height="100%"><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="white" stroke-width="1"/></pattern><rect width="100%" height="100%" fill="url(#grid)"/></svg>
+      </div>
+
+      <!-- Network Line -->
+      <div class="absolute w-full h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent top-1/2 -translate-y-1/2"></div>
+      
+      <!-- Users & Serialization Indicators -->
+      <div class="w-full flex justify-between items-start px-12 relative z-10 py-10">
+        <!-- Alice Side -->
+        <div class="flex flex-col items-center gap-4">
+            <div class="relative">
+                <div class="w-20 h-20 bg-cyan-500 rounded-3xl flex items-center justify-center text-slate-950 font-black text-3xl shadow-2xl">A</div>
+                <div id="alice-serial" class="absolute -bottom-2 -right-4 px-2 py-1 bg-slate-900 border border-cyan-500/30 rounded text-[8px] font-black text-cyan-400 hidden animate-in zoom-in">
+                    OBJ → HEX
+                </div>
+            </div>
+            <div class="text-center">
+                <div class="text-xs font-black text-white">ALICE</div>
+                <div class="text-[9px] font-bold text-slate-500 uppercase tracking-widest">SENDER</div>
+            </div>
+        </div>
+
+        <!-- Educational Formula (Center) -->
+        <div id="math-formula" class="flex flex-col items-center gap-4 opacity-0 transition-all duration-1000 translate-y-4">
+            <div class="px-4 py-1 bg-indigo-500/10 border border-indigo-500/20 rounded-full text-[9px] font-black text-indigo-400 uppercase tracking-widest">
+                PHÉP TOÁN KỲ DIỆU
+            </div>
+            <div class="text-2xl md:text-3xl font-serif italic text-white flex items-center gap-4 bg-slate-950/80 p-6 rounded-3xl border border-white/5 shadow-2xl">
+                <div class="flex flex-col items-center italic">
+                    <span class="text-cyan-400 text-sm not-italic font-black mb-1">Alice tính</span>
+                    <span>d<sub>A</sub> × Q<sub>B</sub></span>
+                </div>
+                <span class="text-slate-700 text-4xl">=</span>
+                <div class="flex flex-col items-center italic">
+                    <span class="text-indigo-400 text-sm not-italic font-black mb-1">Bob tính</span>
+                    <span>d<sub>B</sub> × Q<sub>A</sub></span>
+                </div>
+            </div>
+            <div class="text-[10px] text-slate-400 font-bold animate-pulse">ĐANG THỎA THUẬN...</div>
+        </div>
+
+        <!-- Bob Side -->
+        <div class="flex flex-col items-center gap-4">
+             <div class="relative">
+                <div class="w-20 h-20 bg-indigo-500 rounded-3xl flex items-center justify-center text-slate-950 font-black text-3xl shadow-2xl">B</div>
+                <div id="bob-serial" class="absolute -bottom-2 -left-4 px-2 py-1 bg-slate-900 border border-indigo-500/30 rounded text-[8px] font-black text-indigo-400 hidden animate-in zoom-in">
+                    OBJ → HEX
+                </div>
+            </div>
+            <div class="text-center">
+                <div class="text-xs font-black text-white">BOB</div>
+                <div class="text-[9px] font-bold text-slate-500 uppercase tracking-widest">RECEIVER</div>
+            </div>
+        </div>
+      </div>
+
+      <!-- Packets Container -->
+      <div id="packet-container" class="absolute inset-0 pointer-events-none"></div>
+
+      <!-- Result Area -->
+      <div id="shared-secret-result" class="w-full max-w-xl pb-10 space-y-4 hidden animate-in slide-in-from-bottom-4">
+          <div class="bg-emerald-500/5 border border-emerald-500/20 p-6 rounded-3xl space-y-3 shadow-2xl shadow-emerald-500/5">
+              <div class="flex justify-between items-center">
+                  <span class="text-[10px] font-black text-emerald-500 uppercase tracking-widest">Shared Secret (Đồng thuận)</span>
+                  <div class="px-2 py-0.5 bg-emerald-500 text-slate-950 text-[8px] font-black rounded uppercase">Consensus</div>
+              </div>
+              <div id="shared-secret-hex" class="text-base font-mono break-all text-white leading-relaxed text-center p-4 bg-slate-950 rounded-2xl border border-white/5"></div>
+              <p class="text-[10px] text-slate-400 text-center italic">Đây là con số bí mật duy nhất mà cả Alice và Bob đều tự tính toán được mà không cần gửi cho nhau.</p>
+          </div>
+      </div>
+    </div>
+
+    <!-- Action Button -->
+    <div class="flex justify-center flex-col items-center gap-4">
+       <button 
+          id="action-btn"
+          class="px-12 py-5 bg-white text-slate-950 font-black rounded-2xl hover:bg-cyan-400 transition-all shadow-2xl flex items-center gap-3 group"
+        >
+          <span>CHẠY GIAO THỨC TRAO ĐỔI</span>
+          <svg class="group-hover:translate-x-1 transition-transform" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12h14m-7-7 7 7-7 7"/></svg>
+        </button>
+    </div>
+
+    <!-- Educational Content Accordion -->
+    <div class="max-w-4xl mx-auto space-y-4">
+        <details class="group bg-slate-900/50 border border-white/5 rounded-3xl overflow-hidden shadow-xl" open>
+            <summary class="flex items-center justify-between p-6 cursor-pointer hover:bg-white/5 transition-all">
+                <div class="flex items-center gap-4">
+                    <div class="w-8 h-8 rounded-full bg-cyan-500/20 flex items-center justify-center text-cyan-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M17 6.1H3"/><path d="M21 12.1H3"/><path d="M15.1 18.1H3"/></svg>
+                    </div>
+                    <span class="font-black text-xs uppercase tracking-widest text-slate-200">Giao thức Trao đổi Khóa hoạt động như thế nào?</span>
+                </div>
+                <svg class="w-5 h-5 text-slate-500 group-open:rotate-180 transition-transform" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+            </summary>
+            <div class="px-8 pb-8 space-y-8 text-sm text-slate-400 leading-relaxed text-justify">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="space-y-3">
+                        <h4 class="font-black text-cyan-400 text-xs">1. CƠ CHẾ "GỬI VÀ NHẬN"</h4>
+                        <p>Trong thực tế, bước này diễn ra qua môi trường mạng (API, Socket). Alice và Bob trao đổi các chuỗi <strong>Public Key</strong> (công khai) cho nhau.</p>
+                        <p>Việc trao đổi này giống như hai người trao đổi số điện thoại để sau này có thể nhắn tin mã hóa cho nhau vậy.</p>
+                    </div>
+                    <div class="space-y-3">
+                        <h4 class="font-black text-indigo-400 text-xs">2. TẠI SAO PHẢI TRAO ĐỔI?</h4>
+                        <p>Đây là phần "kỳ diệu" của ECDH: Khi Alice dùng Private Key của mình kết hợp với Public Key của Bob, và ngược lại, cả hai sẽ tự tính toán ra cùng một <strong>Shared Secret</strong>.</p>
+                        <div class="p-3 bg-slate-950 rounded-xl border border-white/5 font-mono text-[10px] text-center italic">
+                            SS = PrivateKey<sub>Alice</sub> × PublicKey<sub>Bob</sub><br>= PrivateKey<sub>Bob</sub> × PublicKey<sub>Alice</sub>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pt-6 border-t border-white/5">
+                    <h4 class="font-black text-amber-500 text-xs mb-3 flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+                        LƯU Ý VỀ BẢO MẬT (MAN-IN-THE-MIDDLE)
+                    </h4>
+                    <p class="mb-4">Nếu một kẻ tấn công đứng giữa và gửi cho Alice một Public Key giả mạo, Alice sẽ bị lừa. Đó là lý do tại sao ở Bước 1 Alice tạo thêm khóa <strong>ECDSA</strong>.</p>
+                    <p class="text-xs italic bg-slate-950 p-4 rounded-xl border-l-4 border-amber-500">
+                        Alice sẽ dùng khóa ECDSA để <strong>"ký tên"</strong> vào gói tin chứa khóa ECDH của mình. Bob nhận được sẽ dùng Public Key ECDSA của Alice để kiểm tra danh tính trước khi chấp nhận khóa.
+                    </p>
+                </div>
+            </div>
+        </details>
+    </div>
+  </div>
+</SimulationLayout>
+
+<script>
+  import { deriveSharedBits, bufferToHex, exportPublicKey } from '../utils/crypto.js';
+  import { loadState, saveState } from '../utils/state.js';
+
+  const actionBtn = document.getElementById('action-btn');
+  const packetContainer = document.getElementById('packet-container');
+  const resultArea = document.getElementById('shared-secret-result');
+  const secretHex = document.getElementById('shared-secret-hex');
+  const statusTag = document.getElementById('status-tag');
+  
+  const aliceSerial = document.getElementById('alice-serial');
+  const bobSerial = document.getElementById('bob-serial');
+  const mathFormula = document.getElementById('math-formula');
+
+  actionBtn?.addEventListener('click', async () => {
+    actionBtn.disabled = true;
+    const state = await loadState();
+
+    if (!state.keys.alice.ecdh || !state.keys.bob.ecdh) {
+        alert('Thiếu dữ liệu khóa từ Bước 1! Quay lại để tạo.');
+        window.location.href = '/step1-keygen';
+        return;
+    }
+
+    statusTag.textContent = "Đang gửi khóa";
+    statusTag.classList.replace("bg-amber-500/10", "bg-cyan-500/10");
+    statusTag.classList.replace("text-amber-500", "text-cyan-500");
+
+    // 1. Serialize Alice
+    aliceSerial.classList.remove('hidden');
+    await new Promise(r => setTimeout(r, 600));
+
+    // 2. Alice -> Bob
+    await sendPacket('A', 'B', 'ECDH PubKey (Alice)');
+    
+    // 3. Serialize Bob
+    bobSerial.classList.remove('hidden');
+    await new Promise(r => setTimeout(r, 600));
+
+    // 4. Bob -> Alice
+    await sendPacket('B', 'A', 'ECDH PubKey (Bob)');
+
+    // 5. Mathematical derivation
+    mathFormula.classList.remove('opacity-0', 'translate-y-4');
+    statusTag.textContent = "Đang thỏa thuận";
+    await new Promise(r => setTimeout(r, 2000));
+
+    // Calculate Shared Secret
+    const sharedBits = await deriveSharedBits(state.keys.alice.ecdh.privateKey, state.keys.bob.ecdh.publicKey);
+    const hex = bufferToHex(sharedBits);
+
+    state.sharedHex = hex;
+    state.step = 3;
+    await saveState(state);
+
+    secretHex.textContent = hex;
+    resultArea.classList.remove('hidden');
+    
+    statusTag.textContent = "Đồng thuận ✅";
+    statusTag.classList.replace("bg-cyan-500/10", "bg-emerald-500/10");
+    statusTag.classList.replace("text-cyan-500", "text-emerald-500");
+
+    actionBtn.innerHTML = `
+      <span>TIẾP TỤC BƯỚC 3</span>
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12h14m-7-7 7 7-7 7"/></svg>
+    `;
+    actionBtn.classList.replace('bg-white', 'bg-emerald-500');
+    actionBtn.disabled = false;
+    actionBtn.onclick = () => window.location.href = '/step3-hashing';
+  });
+
+  async function sendPacket(from, to, label) {
+    return new Promise((resolve) => {
+        const packet = document.createElement('div');
+        packet.className = `absolute top-1/2 -translate-y-1/2 w-48 h-12 border border-white/20 rounded-2xl flex items-center justify-center text-[10px] font-black text-white backdrop-blur-xl shadow-2xl transition-all duration-1000 ease-in-out z-20 overflow-hidden`;
+        packet.innerHTML = `
+            <div class="absolute inset-0 bg-gradient-to-r ${from === 'A' ? 'from-cyan-500/40' : 'from-indigo-500/40'} to-slate-900/40"></div>
+            <div class="relative flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                ${label}
+            </div>
+        `;
+        
+        if (from === 'A') {
+            packet.style.left = '10%';
+            packetContainer.appendChild(packet);
+            setTimeout(() => {
+                packet.style.left = '75%';
+                packet.style.opacity = '0';
+            }, 50);
+        } else {
+            packet.style.right = '10%';
+            packetContainer.appendChild(packet);
+            setTimeout(() => {
+                packet.style.right = '75%';
+                packet.style.opacity = '0';
+            }, 50);
+        }
+
+        setTimeout(() => {
+            packet.remove();
+            resolve();
+        }, 1050);
+    });
+  }
+</script>

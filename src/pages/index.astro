@@ -1,0 +1,168 @@
+---
+import SimulationLayout from '../layouts/SimulationLayout.astro';
+---
+
+<SimulationLayout title="Nhóm " currentStep={0}>
+  <div class="max-w-3xl mx-auto text-center space-y-8 py-12">
+    <div class="space-y-4">
+      <h1 class="text-5xl md:text-7xl font-black text-white tracking-tighter">
+        MẬT MÃ HỌC <span class="bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-blue-600">TRỰC QUAN</span>
+      </h1>
+      <p class="text-slate-400 text-lg max-w-xl mx-auto leading-relaxed">
+        Khám phá quy trình bảo mật dữ liệu qua 7 bước chuẩn công nghiệp: Trao đổi khóa, Chữ ký số và Mã hóa đối xứng.
+      </p>
+    </div>
+
+    <div class="step-card text-left space-y-6 border border-cyan-500/10">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="space-y-2">
+          <label class="text-[10px] uppercase font-black tracking-widest text-cyan-500">Mã bản ghi (ID)</label>
+          <div class="flex gap-2">
+            <input 
+              type="text"
+              id="record-id"
+              class="flex-1 bg-slate-950/50 border border-white/10 rounded-2xl px-6 py-4 text-white focus:border-cyan-500 outline-none transition-all font-mono"
+              placeholder="VD: SV123"
+            />
+            <button 
+              id="search-btn"
+              class="px-4 bg-white/5 border border-white/10 text-white font-black rounded-2xl hover:bg-white/10 transition-all text-[10px] uppercase tracking-widest"
+            >
+              TÌM
+            </button>
+          </div>
+        </div>
+        <div class="space-y-2">
+          <label class="text-[10px] uppercase font-black tracking-widest text-emerald-500">Trình trạng</label>
+          <div id="record-status" class="px-6 py-4 bg-slate-950/30 border border-white/5 rounded-2xl text-[10px] text-slate-500 items-center flex gap-2 italic h-[56px]">
+            Chưa có bản ghi nào được chọn
+          </div>
+        </div>
+      </div>
+
+      <div class="space-y-2">
+        <label class="text-[10px] uppercase font-black tracking-widest text-cyan-500">Thông điệp cần bảo vệ</label>
+        <textarea 
+          id="msg-input" 
+          class="w-full bg-slate-950/50 border border-white/10 rounded-2xl p-6 text-xl text-white focus:border-cyan-500 outline-none transition-all resize-none h-40 shadow-inner"
+          placeholder="Nhập nội dung tin nhắn bí mật của bạn tại đây..."
+        ></textarea>
+        <div id="msg-error" class="text-[10px] text-red-500 font-bold hidden">Vui lòng nhập thông điệp!</div>
+      </div>
+
+      <div class="flex items-center justify-between gap-4 pt-4">
+        <div class="flex items-center gap-3 text-slate-400 text-xs italic font-medium">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-cyan-500"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          Dữ liệu của bạn được lưu trữ đồng bộ vào SQLite.
+        </div>
+        <button 
+          id="start-btn"
+          class="px-8 py-4 bg-cyan-500 text-slate-950 font-black rounded-2xl hover:bg-cyan-400 transition-all scale-100 hover:scale-105 active:scale-95 shadow-[0_20px_40px_rgba(34,211,238,0.2)] flex items-center gap-2"
+        >
+          BẮT ĐẦU MÔ PHỎNG
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Feature Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-left">
+      {[
+        { title: 'TÍNH TOÀN VẸN', desc: 'Sử dụng SHA-256 để đảm bảo tin nhắn không bị sửa đổi.', color: 'emerald' },
+        { title: 'XÁC THỰC', desc: 'Dùng ECDSA để chứng minh nguồn gốc người gửi.', color: 'purple' },
+        { title: 'BẢO MẬT', desc: 'Mã hóa AES-256 đối xứng với khóa được thỏa thuận từ ECDH.', color: 'blue' }
+      ].map(f => (
+        <div class="p-5 rounded-2xl bg-white/5 border border-white/5 space-y-2">
+          <div class={`text-[10px] font-black text-${f.color}-400`}>{f.title}</div>
+          <p class="text-[11px] text-slate-300 leading-normal font-medium">{f.desc}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+</SimulationLayout>
+
+<script>
+  import { saveState, loadState, INITIAL_STATE } from '../utils/state.js';
+
+  const recordInput = document.getElementById('record-id') as HTMLInputElement;
+  const searchBtn = document.getElementById('search-btn');
+  const statusEl = document.getElementById('record-status');
+  const msgInput = document.getElementById('msg-input') as HTMLTextAreaElement;
+  const msgError = document.getElementById('msg-error');
+
+  async function checkRecord(id: string) {
+    if (!id) {
+        statusEl.textContent = "Nhập ID để tìm...";
+        statusEl.className = "px-6 py-4 bg-slate-950/30 border border-white/5 rounded-2xl text-[10px] text-slate-500 items-center flex gap-2 italic h-[56px]";
+        return;
+    }
+
+    statusEl.innerHTML = `<svg class="animate-spin w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Đang quét DB...`;
+    
+    try {
+        const state = await loadState(id);
+        if (state && state.msg) {
+            msgInput.value = state.msg;
+            statusEl.textContent = `Tìm thấy bản ghi: [${id}] ✅`;
+            statusEl.className = "px-6 py-4 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl text-[10px] text-emerald-500 items-center flex gap-2 font-black h-[56px]";
+            msgError.classList.add('hidden');
+        } else {
+            statusEl.textContent = `ID chưa tồn tại: [${id}] ✨`;
+            statusEl.className = "px-6 py-4 bg-blue-500/10 border border-blue-500/20 rounded-2xl text-[10px] text-blue-400 items-center flex gap-2 font-black h-[56px]";
+        }
+    } catch (e) {
+        statusEl.textContent = "Lỗi kết nối DB!";
+        statusEl.className = "px-6 py-4 bg-red-500/10 border border-red-500/20 rounded-2xl text-[10px] text-red-500 items-center flex gap-2 font-black h-[56px]";
+    }
+  }
+
+  // Initial load
+  window.addEventListener('DOMContentLoaded', async () => {
+    const activeId = localStorage.getItem('crypto_wizard_active_id');
+    if (activeId) {
+        recordInput.value = activeId;
+        checkRecord(activeId);
+    }
+  });
+
+  // Manual Search
+  searchBtn?.addEventListener('click', () => {
+    checkRecord(recordInput.value.trim());
+  });
+
+  // Start with validation
+  document.getElementById('start-btn')?.addEventListener('click', async () => {
+    const id = recordInput.value.trim() || 'default';
+    const msg = msgInput.value.trim();
+    
+    if (!msg) {
+        msgError.classList.remove('hidden');
+        msgInput.classList.add('border-red-500');
+        msgInput.classList.remove('border-white/10');
+        return;
+    }
+    
+    // Clear errors
+    msgError.classList.add('hidden');
+    msgInput.classList.remove('border-red-500');
+    
+    // Save state with ID
+    await saveState({
+      ...INITIAL_STATE,
+      recordId: id,
+      msg: msg,
+      step: 1
+    });
+
+    window.location.href = '/step1-keygen';
+  });
+
+  // Remove error on input
+  msgInput.addEventListener('input', () => {
+    if (msgInput.value.trim()) {
+        msgError.classList.add('hidden');
+        msgInput.classList.remove('border-red-500');
+        msgInput.classList.add('border-white/10');
+    }
+  });
+</script>

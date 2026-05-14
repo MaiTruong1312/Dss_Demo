@@ -1,0 +1,484 @@
+---
+import SimulationLayout from '../layouts/SimulationLayout.astro';
+---
+
+<SimulationLayout title="BƯỚC 7: Xác thực & Kết luận - Crypto Wizard" currentStep={7}>
+  <div class="space-y-8 pb-20">
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="text-3xl font-black text-white">BƯỚC 7: Giải mã & Xác thực</h1>
+        <p class="text-slate-400">Bob nhận gói tin và tiến hành quy trình kiểm tra an ninh 3 lớp.</p>
+      </div>
+      <div id="status-tag" class="px-4 py-1.5 bg-amber-500/10 border border-amber-500/20 rounded-full text-[10px] font-black uppercase text-amber-500 tracking-widest">
+        Chờ tiếp nhận
+      </div>
+    </div>
+
+    <!-- Final Verdict Card (Hidden until finished) -->
+    <div id="final-verdict" class="hidden transform transition-all duration-700 scale-95 opacity-0">
+        <div class="p-8 rounded-[2.5rem] border-4 flex flex-col items-center gap-6 text-center shadow-[0_0_100px_rgba(0,0,0,0.3)]">
+            <div id="verdict-icon" class="w-24 h-24 rounded-full flex items-center justify-center text-white">
+                <!-- SVG injected by JS -->
+            </div>
+            <div class="space-y-2">
+                <h2 id="verdict-title" class="text-4xl font-black uppercase tracking-tighter"></h2>
+                <p id="verdict-desc" class="text-slate-400 text-sm max-w-md mx-auto"></p>
+            </div>
+            
+            <div class="flex flex-wrap justify-center gap-4">
+                <button id="save-record-btn" class="px-8 py-3 bg-emerald-500 text-slate-950 text-[10px] font-black rounded-full hover:bg-emerald-400 transition-all uppercase tracking-widest flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                    Lưu bản ghi vào Database
+                </button>
+                <button onclick="location.href='/'; localStorage.setItem('crypto_wizard_active_id', '');" class="px-8 py-3 bg-white/10 hover:bg-white/20 text-white text-[10px] font-black rounded-full border border-white/10 transition-all uppercase tracking-widest">
+                    Thoát & Reset
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Verification Lab Grid -->
+    <div id="verification-grid" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Check 1: Decryption -->
+        <div class="step-card border-blue-500/10 space-y-6 flex flex-col justify-between">
+            <div class="text-[10px] uppercase font-black tracking-widest text-blue-400 flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                Lớp 1: Giải mã AES
+            </div>
+            <div class="bg-slate-950 p-5 rounded-2xl border border-white/5 space-y-4">
+                <div class="text-[9px] font-black text-slate-500">CIPHERTEXT (RECEIVE)</div>
+                <div id="disp-ciphertext" class="text-[9px] font-mono text-slate-600 break-all h-20 overflow-hidden line-clamp-4">••••••••••••••••</div>
+                <div id="check-1-status" class="py-2 text-[10px] font-black text-center border-t border-white/5 text-slate-500 italic uppercase">Đang chờ giải mã...</div>
+            </div>
+            <div class="text-[9px] text-slate-400 leading-normal bg-blue-500/5 p-3 rounded-xl border border-blue-500/10">
+                Bob dùng <strong>Shared Secret</strong> để mở khóa GCM. Nếu dữ liệu bị sửa, việc giải mã sẽ thất bại ngay lập tức.
+            </div>
+        </div>
+
+        <!-- Check 2: Authentication -->
+        <div class="step-card border-purple-500/10 space-y-6 flex flex-col justify-between">
+            <div class="text-[10px] uppercase font-black tracking-widest text-purple-400 flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                Lớp 2: Chữ ký số Alice
+            </div>
+            <div class="bg-slate-950 p-5 rounded-2xl border border-white/5 space-y-4">
+                <div class="text-[9px] font-black text-slate-500">ALICE'S PUBLIC KEY</div>
+                <div id="disp-alice-pub" class="text-[9px] font-mono text-slate-600 break-all h-20 overflow-hidden line-clamp-4">••••••••••••••••</div>
+                <div id="check-2-status" class="py-2 text-[10px] font-black text-center border-t border-white/5 text-slate-500 italic uppercase">Chờ Verify Chữ ký...</div>
+            </div>
+            <div class="text-[9px] text-slate-400 leading-normal bg-purple-500/5 p-3 rounded-xl border border-purple-500/10">
+                Bob dùng <strong>ECDSA Public Key</strong> của Alice. Việc xác minh đúng chứng minh "Đúng là Alice gửi".
+            </div>
+        </div>
+
+        <!-- Check 3: Integrity -->
+        <div class="step-card border-emerald-500/10 space-y-6 flex flex-col justify-between">
+            <div class="text-[10px] uppercase font-black tracking-widest text-emerald-400 flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                Lớp 3: Tính toàn vẹn
+            </div>
+            <div class="bg-slate-950 p-5 rounded-2xl border border-white/5 space-y-4">
+                <div class="text-[9px] font-black text-slate-500">RECALCULATED HASH</div>
+                <div id="disp-hash" class="text-[9px] font-mono text-slate-600 break-all h-20 overflow-hidden line-clamp-4">••••••••••••••••</div>
+                <div id="check-3-status" class="py-2 text-[10px] font-black text-center border-t border-white/5 text-slate-500 italic uppercase">Đang chờ tính Hash...</div>
+            </div>
+             <div class="text-[9px] text-slate-400 leading-normal bg-emerald-500/5 p-3 rounded-xl border border-emerald-500/10">
+                Bob băm thông điệp và so sánh với băm trong chữ ký. Nếu trùng khớp, dữ liệu chưa bị ai sửa đổi.
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Button -->
+    <div class="flex justify-center pt-4">
+       <button id="action-btn" class="px-12 py-5 bg-white text-slate-950 font-black rounded-2xl hover:bg-emerald-400 transition-all shadow-2xl flex items-center gap-3 group">
+          <svg class="w-5 h-5 animate-spin hidden" id="spinner" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+          <span id="btn-text">BẮT ĐẦU QUY TRÌNH XÁC THỰC</span>
+        </button>
+    </div>
+
+    <!-- Verification Math Engine -->
+    <div id="math-engine" class="hidden space-y-6">
+        <div class="text-center space-y-2">
+            <h3 class="text-xl font-black text-white uppercase tracking-tighter">CỖ MÁY XÁC THỰC (VERIFICATION ENGINE)</h3>
+            <p class="text-[10px] text-slate-500 uppercase tracking-widest font-black">Giải mã toán học đằng sau quá trình kiểm tra</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- ECDSA Verification Math -->
+            <div class="bg-slate-900/80 border border-purple-500/20 rounded-[2rem] p-8 space-y-6 relative overflow-hidden group">
+                <div class="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-20 transition-opacity">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="16 11 18 13 22 9"/></svg>
+                </div>
+                
+                <h4 class="text-xs font-black text-purple-400 uppercase tracking-widest">TOÁN HỌC ECDSA (VERIFY)</h4>
+                
+                <div class="space-y-4 font-mono text-[11px]">
+                    <div class="flex justify-between items-center bg-black/40 p-3 rounded-xl border border-white/5">
+                        <span class="text-slate-500">Đầu vào hash (z):</span>
+                        <span id="math-z" class="text-purple-300">Calculating...</span>
+                    </div>
+                    <div class="flex justify-between items-center bg-black/40 p-3 rounded-xl border border-white/5">
+                        <span class="text-slate-500">Nghịch đảo s (w):</span>
+                        <span id="math-w" class="text-purple-300">Calculating...</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 text-center text-[10px]">
+                        <div class="bg-purple-500/10 p-3 rounded-xl border border-purple-500/20">
+                            <div class="text-slate-500 mb-1">u1 = z*w</div>
+                            <div id="math-u1" class="text-white font-black truncate">...</div>
+                        </div>
+                        <div class="bg-blue-500/10 p-3 rounded-xl border border-blue-500/20">
+                            <div class="text-slate-500 mb-1">u2 = r*w</div>
+                            <div id="math-u2" class="text-white font-black truncate">...</div>
+                        </div>
+                    </div>
+                    <div class="p-4 bg-slate-950 rounded-2xl border border-white/5 text-center">
+                        <div class="text-[9px] text-slate-500 mb-2 uppercase tracking-widest">Công thức Verify P = u1G + u2QA</div>
+                        <div id="math-final-p" class="text-xs font-black text-emerald-400 truncate">Pending Verification...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AES-GCM Authentication Math -->
+            <div class="bg-slate-900/80 border border-blue-500/20 rounded-[2rem] p-8 space-y-6 relative overflow-hidden group">
+                <div class="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-20 transition-opacity">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                </div>
+                
+                <h4 class="text-xs font-black text-blue-400 uppercase tracking-widest">XÁC THỰC AES-GCM (TAG CHECK)</h4>
+                
+                <div class="space-y-6">
+                    <div class="grid grid-cols-1 gap-4 font-mono text-[10px]">
+                        <div class="space-y-2">
+                            <label class="text-slate-500 uppercase">Received Auth Tag (GCM):</label>
+                            <div id="math-tag-recv" class="bg-black/60 p-3 rounded-xl border border-white/10 text-slate-400 break-all">...</div>
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-slate-500 uppercase">Recalculated Tag:</label>
+                            <div id="math-tag-calc" class="bg-black/60 p-3 rounded-xl border border-white/10 text-slate-400 break-all">...</div>
+                        </div>
+                    </div>
+                    <div id="math-gcm-status" class="py-3 px-6 rounded-2xl bg-white/5 border border-white/5 text-center text-[11px] font-black italic text-slate-500">
+                        GHASH(Ciphertext, AAD, H) ⊕ E(K, J0)
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Security Audit Report (Detailed comparison) -->
+    <div id="security-audit" class="hidden animate-in fade-in slide-in-from-top-4 duration-700 space-y-6">
+        <div class="p-8 rounded-[2.5rem] bg-slate-900 border-2 border-dashed border-red-500/20 space-y-8">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 bg-red-500/10 rounded-2xl flex items-center justify-center text-red-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                </div>
+                <div>
+                    <h4 class="text-xs font-black text-white uppercase tracking-widest leading-none">HỒ SƠ GIÁM ĐỊNH AN NINH</h4>
+                    <p class="text-[10px] text-slate-500 mt-1 uppercase tracking-widest font-bold">Security Integrity Report #821</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
+                <!-- Check 1 Deep Dive -->
+                <div class="space-y-4">
+                    <div class="flex justify-between items-end border-b border-white/5 pb-2">
+                        <span class="text-[10px] font-black text-blue-400 uppercase">1. So sánh Authenticator Tag (GCM)</span>
+                        <div id="audit-1-res" class="text-[9px] font-black uppercase text-slate-500">Pending</div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 text-[10px] font-mono">
+                        <div class="space-y-2">
+                            <div class="text-slate-600 uppercase tracking-tighter">BÊN TRONG GÓI TIN</div>
+                            <div id="tag-orig" class="p-2 bg-black/40 rounded border border-white/5 text-slate-500 break-all leading-tight">...</div>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="text-slate-600 uppercase tracking-tighter">BOB TÍNH TOÁN LẠI</div>
+                            <div id="tag-recv" class="p-2 bg-black/40 rounded border border-white/5 text-slate-500 break-all leading-tight">...</div>
+                        </div>
+                    </div>
+                    <p id="audit-1-desc" class="text-[10px] text-slate-500 italic leading-relaxed">Checking GCM (Galois Counter Mode) tag integrity...</p>
+                </div>
+
+                <!-- Check 2 Deep Dive -->
+                <div class="space-y-4">
+                    <div class="flex justify-between items-end border-b border-white/5 pb-2">
+                        <span class="text-[10px] font-black text-purple-400 uppercase">2. Xác thực Identity (ECDSA)</span>
+                        <div id="audit-2-res" class="text-[9px] font-black uppercase text-slate-500">Pending</div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 text-[10px] font-mono">
+                        <div class="space-y-2">
+                            <div class="text-slate-600 uppercase tracking-tighter">CHỮ KÝ BAN ĐẦU</div>
+                            <div id="sig-orig" class="p-2 bg-black/40 rounded border border-white/5 text-slate-500 break-all leading-tight">...</div>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="text-slate-600 uppercase tracking-tighter">CHỮ KÝ THỰC TẾ</div>
+                            <div id="sig-recv" class="p-2 bg-black/40 rounded border border-white/5 text-slate-500 break-all leading-tight">...</div>
+                        </div>
+                    </div>
+                    <p id="audit-2-desc" class="text-[10px] text-slate-500 italic leading-relaxed">Verifying signature using Alice's public key...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detailed Summary Accordion -->
+    <div class="max-w-4xl mx-auto space-y-4">
+        <details class="group bg-slate-900/50 border border-white/5 rounded-3xl overflow-hidden shadow-xl" open>
+            <summary class="flex items-center justify-between p-6 cursor-pointer hover:bg-white/5 transition-all">
+                <div class="flex items-center gap-4">
+                    <div class="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                    </div>
+                    <span class="font-black text-xs uppercase tracking-widest text-slate-200">Tổng kết: "Phép màu" của mật mã học</span>
+                </div>
+                <svg class="w-5 h-5 text-slate-500 group-open:rotate-180 transition-transform" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+            </summary>
+            <div class="px-8 pb-8 space-y-8 text-sm text-slate-400 leading-relaxed text-justify">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
+                    <div class="space-y-4">
+                        <h4 class="font-black text-emerald-400 text-xs uppercase tracking-widest">TẠI SAO PHẢI XÁC THỰC?</h4>
+                        <p>Trong thực tế, bạn không bao giờ tin tưởng được internet. Bước 7 chính là **phút giây sự thật**. Alice và Bob đã sử dụng một tổ hợp nhiều thuật toán để giải quyết 3 vấn đề cốt lõi:</p>
+                        <ul class="space-y-2 mt-4">
+                            <li class="flex gap-3">
+                                <span class="text-blue-400 font-black">1. Bí mật:</span> Hacker Eve không thể đọc nội dung (nhờ AES).
+                            </li>
+                            <li class="flex gap-3">
+                                <span class="text-purple-400 font-black">2. Định danh:</span> Bob biết chắc Alice đã gửi (nhờ ECDSA).
+                            </li>
+                            <li class="flex gap-3">
+                                <span class="text-cyan-400 font-black">3. Toàn vẹn:</span> Bob biết nội dung chưa bị sửa (nhờ SHA-256).
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="space-y-4">
+                        <h4 class="font-black text-emerald-400 text-xs uppercase tracking-widest">KẾT THÚC MỘT QUY TRÌNH</h4>
+                        <p>Dự án này mô phỏng lại cách các ứng dụng hiện đại như **Zalo, Telegram hay Ngân hàng** hoạt động ngầm bên dưới. Mọi thao tác toán học phức tạp mà bạn vừa thấy chỉ diễn ra trong vài mili giây trên điện thoại của bạn.</p>
+                        <div class="p-4 bg-slate-950 rounded-2xl border border-white/5 italic text-xs leading-relaxed">
+                            "Mật mã học không chỉ là bảo mật, nó là bảo vệ sự riêng tư và tự do của mỗi cá nhân trên không gian số."
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </details>
+    </div>
+  </div>
+</SimulationLayout>
+
+<script>
+  import { decryptAES, verifyECDSA, hexToBuffer, bufferToHex, exportPublicKey } from '../utils/crypto.js';
+  import { loadState, saveState } from '../utils/state.js';
+
+  const actionBtn = document.getElementById('action-btn');
+  const spinner = document.getElementById('spinner');
+  const btnText = document.getElementById('btn-text');
+  const statusTag = document.getElementById('status-tag');
+  const grid = document.getElementById('verification-grid');
+  const verdict = document.getElementById('final-verdict');
+
+  const dispCipher = document.getElementById('disp-ciphertext');
+  const dispAlicePub = document.getElementById('disp-alice-pub');
+  const dispHash = document.getElementById('disp-hash');
+
+  const s1 = document.getElementById('check-1-status');
+  const s2 = document.getElementById('check-2-status');
+  const s3 = document.getElementById('check-3-status');
+
+  async function init() {
+    const state = await loadState();
+    if (state.ciphertextHex) dispCipher.textContent = state.ciphertextHex.toUpperCase();
+    if (state.keys.alice.ecdsa) {
+        dispAlicePub.textContent = await exportPublicKey(state.keys.alice.ecdsa.publicKey);
+    }
+  }
+
+  actionBtn?.addEventListener('click', async () => {
+    const state = await loadState();
+    const vTitle = document.getElementById('verdict-title');
+    const mathEngine = document.getElementById('math-engine');
+    
+    actionBtn.disabled = true;
+    spinner.classList.remove('hidden');
+    btnText.textContent = "Đang chạy quy trình kiểm tra...";
+    statusTag.textContent = "Đang kiểm tra 🔍";
+    
+    // Show math engine
+    mathEngine.classList.remove('hidden');
+    mathEngine.classList.add('animate-pulse');
+
+    await new Promise(r => setTimeout(r, 1000));
+
+    let isDecrypted = false;
+    let isSignedVal = false;
+    let decryptedPayload = null;
+
+    try {
+        // LAYER 1: DECRYPT
+        const sharedKey = await window.crypto.subtle.importKey(
+            'raw', 
+            hexToBuffer(state.aesKeyHex),
+            { name: "AES-GCM" }, 
+            false, 
+            ["decrypt"]
+        );
+        
+        let finalCipher = hexToBuffer(state.ciphertextHex);
+        const originalTag = state.ciphertextHex.slice(-32); // Last 16 bytes (32 hex chars) is the tag in GCM
+        
+        if (state.isTamperedData) {
+            const arr = new Uint8Array(finalCipher);
+            arr[10] = arr[10] ^ 0xFF; // Flip a bit in the MIDDLE of data (not just the tag)
+            finalCipher = arr.buffer;
+        }
+
+        const iv = hexToBuffer(state.ivHex);
+        const result = await decryptAES(sharedKey, finalCipher, iv);
+        
+        // Populate Security Audit: Lớp 1
+        const tagOrigEl = document.getElementById('tag-orig');
+        const tagRecvEl = document.getElementById('tag-recv');
+        const audit1Res = document.getElementById('audit-1-res');
+        const audit1Desc = document.getElementById('audit-1-desc');
+        const securityAudit = document.getElementById('security-audit');
+        
+        tagOrigEl.textContent = "0x" + originalTag.toUpperCase();
+        tagRecvEl.textContent = state.isTamperedData ? "0x" + (originalTag.slice(0, 30) + "FF") : "0x" + originalTag.toUpperCase();
+
+        if (result) {
+            isDecrypted = true;
+            decryptedPayload = JSON.parse(result);
+            s1.textContent = "GIẢI MÃ THÀNH CÔNG ✅";
+            s1.className = "py-2 text-[10px] font-black text-center border-t border-white/5 text-emerald-400 uppercase font-mono";
+            
+            audit1Res.textContent = "PASS";
+            audit1Res.className = "text-[9px] font-black uppercase text-emerald-500";
+            audit1Desc.textContent = "Mã xác thực GCM trùng khớp. Dữ liệu chưa bị can thiệp sau khi mã hóa.";
+        } else {
+            throw new Error("GCM MAC Error");
+        }
+    } catch (e) {
+        s1.textContent = "GIẢI MÃ THẤT BẠI ❌";
+        s1.className = "py-2 text-[10px] font-black text-center border-t border-white/5 text-red-500 uppercase font-mono";
+        
+        document.getElementById('security-audit').classList.remove('hidden');
+        const audit1Res = document.getElementById('audit-1-res');
+        const audit1Desc = document.getElementById('audit-1-desc');
+        const tagRecvEl = document.getElementById('tag-recv');
+        
+        audit1Res.textContent = "FAILED";
+        audit1Res.className = "text-[9px] font-black uppercase text-red-500";
+        tagRecvEl.classList.add('text-red-500', 'font-black');
+        audit1Desc.textContent = "LỖI: Mã xác thực GCM không khớp! Dữ liệu đã bị Hacker Eve thay đổi trên đường truyền.";
+    }
+
+    await new Promise(r => setTimeout(r, 1000));
+
+    // LAYER 2: AUTHENTICATION (ECDSA MATH)
+    if (isDecrypted && decryptedPayload) {
+        const audit2Res = document.getElementById('audit-2-res');
+        const audit2Desc = document.getElementById('audit-2-desc');
+        const sigOrigEl = document.getElementById('sig-orig');
+        const sigRecvEl = document.getElementById('sig-recv');
+        
+        const trueSig = decryptedPayload.s;
+        const fakeSig = "30440220" + "F".repeat(64); // Fake DER-ish signature
+        
+        sigOrigEl.textContent = trueSig.slice(0, 32) + "...";
+        sigRecvEl.textContent = state.isTamperedSig ? fakeSig.slice(0, 32) + "..." : trueSig.slice(0, 32) + "...";
+
+        try {
+            let sig = hexToBuffer(state.isTamperedSig ? fakeSig : trueSig);
+            isSignedVal = await verifyECDSA(state.keys.alice.ecdsa.publicKey, sig, state.msg);
+            
+            if (isSignedVal) {
+                s2.textContent = "CHỮ KÝ HỢP LỆ ✅";
+                s2.className = "py-2 text-[10px] font-black text-center border-t border-white/5 text-emerald-400 uppercase font-mono";
+                audit2Res.textContent = "PASS";
+                audit2Res.className = "text-[9px] font-black uppercase text-emerald-500";
+                audit2Desc.textContent = "Xác nhận đúng chữ ký của Alice. Người gửi được định danh hợp lệ.";
+            } else {
+                s2.textContent = "CHỮ KÝ GIẢ MẠO ❌";
+                s2.className = "py-2 text-[10px] font-black text-center border-t border-white/5 text-red-500 uppercase font-mono";
+                
+                document.getElementById('security-audit').classList.remove('hidden');
+                audit2Res.textContent = "FORGED";
+                audit2Res.className = "text-[9px] font-black uppercase text-red-500";
+                sigRecvEl.classList.add('text-red-500', 'font-black');
+                audit2Desc.textContent = "LỖI: Chữ ký số không hợp lệ! Alice không ký gói tin này hoặc chữ ký đã bị Eve thay bằng chữ ký giả.";
+            }
+        } catch (e) {
+             s2.textContent = "LỖI XÁC MINH ❌";
+        }
+    } else {
+        s2.textContent = "KHÔNG THỂ KIỂM TRA ⛔";
+    }
+
+    await new Promise(r => setTimeout(r, 1000));
+
+    // LAYER 3: INTEGRITY (Recalculate hash for visualization)
+    if (isDecrypted && decryptedPayload) {
+        dispHash.textContent = state.hashHex.toUpperCase();
+        s3.textContent = (isDecrypted && isSignedVal) ? "TOÀN VẸN 100% ✅" : "DỮ LIỆU ĐÃ BỊ SỬA ❌";
+        s3.className = (isDecrypted && isSignedVal) ? "py-2 text-[10px] font-black text-center border-t border-white/5 text-emerald-400 uppercase" : "py-2 text-[10px] font-black text-center border-t border-white/5 text-red-500 uppercase";
+        dispHash.classList.replace('text-slate-600', (isDecrypted && isSignedVal) ? 'text-emerald-400' : 'text-red-400');
+    } else {
+        s3.textContent = "LỖI TOÀN VẸN ❌";
+        s3.className = "py-2 text-[10px] font-black text-center border-t border-white/5 text-red-500 uppercase";
+    }
+
+    await new Promise(r => setTimeout(r, 1500));
+
+    // FINAL VERDICT
+    mathEngine.classList.remove('animate-pulse');
+    grid.classList.add('hidden');
+    actionBtn.classList.add('hidden');
+    verdict.classList.remove('hidden');
+    
+    const isSuccess = isDecrypted && isSignedVal;
+    
+    // Update local state with verdict
+    state.verdict = isSuccess ? 'SUCCESS' : 'FAILED';
+    await saveState(state);
+
+    const vIcon = document.getElementById('verdict-icon');
+    const vDesc = document.getElementById('verdict-desc');
+    const vCard = verdict.firstElementChild;
+
+    if (isSuccess) {
+        vCard.className = "p-8 rounded-[2.5rem] border-4 flex flex-col items-center gap-6 text-center shadow-[0_0_100px_rgba(0,0,0,0.3)] bg-emerald-500/10 border-emerald-500/30";
+        vIcon.className = "w-24 h-24 rounded-full flex items-center justify-center text-white bg-emerald-500";
+        vIcon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>`;
+        vTitle.textContent = "KẾT NỐI AN TOÀN TUYỆT ĐỐI";
+        vTitle.className = "text-4xl font-black uppercase tracking-tighter text-emerald-500";
+        vDesc.textContent = "Bob đã nhận được thông điệp gốc từ Alice. Chữ ký số và mã hóa AES đã bảo vệ dữ liệu thành công trước Hacker Eve.";
+        statusTag.textContent = "An toàn ✅";
+    } else {
+        vCard.className = "p-8 rounded-[2.5rem] border-4 flex flex-col items-center gap-6 text-center shadow-[0_0_100px_rgba(0,0,0,0.3)] bg-red-500/10 border-red-500/30";
+        vIcon.className = "w-24 h-24 rounded-full flex items-center justify-center text-white bg-red-500";
+        vIcon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>`;
+        vTitle.textContent = "PHÁT HIỆN TẤN CÔNG NGUY HIỂM";
+        vTitle.className = "text-4xl font-black uppercase tracking-tighter text-red-500";
+        vDesc.textContent = "Cảnh báo! Gói tin đã bị Hacker Eve can thiệp. Quy trình xác thực của Bob đã chặn dữ liệu độc hại kịp thời.";
+        statusTag.textContent = "BỊ TẤN CÔNG ⚠️";
+    }
+
+    setTimeout(() => {
+        verdict.classList.replace('scale-95', 'scale-100');
+        verdict.classList.replace('opacity-0', 'opacity-100');
+    }, 100);
+
+    // Manual Save Button
+    document.getElementById('save-record-btn')?.addEventListener('click', async (e) => {
+        const btn = e.currentTarget as HTMLButtonElement;
+        btn.disabled = true;
+        btn.innerHTML = `<svg class="animate-spin w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> ĐANG LƯU...`;
+        
+        await saveState(state);
+        
+        setTimeout(() => {
+            btn.innerHTML = `ĐÃ LƯU THÀNH CÔNG ✅`;
+            btn.className = "px-8 py-3 bg-blue-500 text-slate-950 text-[10px] font-black rounded-full hover:bg-blue-400 transition-all uppercase tracking-widest flex items-center gap-2";
+        }, 800);
+    });
+  });
+
+  window.addEventListener('DOMContentLoaded', init);
+</script>
