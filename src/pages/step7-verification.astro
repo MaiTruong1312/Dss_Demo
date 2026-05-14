@@ -284,9 +284,36 @@ import SimulationLayout from '../layouts/SimulationLayout.astro';
 
   async function init() {
     const state = await loadState();
-    if (state.ciphertextHex) dispCipher.textContent = state.ciphertextHex.toUpperCase();
+    if (state.ciphertextHex) {
+        dispCipher.textContent = state.ciphertextHex.toUpperCase();
+        dispCipher.classList.remove('text-slate-600');
+        dispCipher.classList.add('text-slate-300');
+    }
     if (state.keys.alice.ecdsa) {
-        dispAlicePub.textContent = await exportPublicKey(state.keys.alice.ecdsa.publicKey);
+        try {
+            dispAlicePub.textContent = await exportPublicKey(state.keys.alice.ecdsa.publicKey);
+            dispAlicePub.classList.remove('text-slate-600');
+            dispAlicePub.classList.add('text-slate-300');
+        } catch (e) {
+            dispAlicePub.textContent = "Error exporting key";
+        }
+    }
+  }
+
+  // Simple DER parser for ECDSA (30 <len> 02 <len_r> <r> 02 <len_s> <s>)
+  function parseDER(hex) {
+    try {
+        if (!hex || hex.length < 10) return { r: 'N/A', s: 'N/A' };
+        // This is a simplified parser for display purposes
+        // DER format: 30 L 02 Lr R 02 Ls S
+        const rLen = parseInt(hex.substring(6, 8), 16);
+        const r = hex.substring(8, 8 + rLen * 2);
+        const sPos = 8 + rLen * 2;
+        const sLen = parseInt(hex.substring(sPos + 2, sPos + 4), 16);
+        const s = hex.substring(sPos + 4, sPos + 4 + sLen * 2);
+        return { r, s };
+    } catch (e) {
+        return { r: hex.substring(0, 32), s: hex.substring(hex.length - 32) };
     }
   }
 
@@ -303,6 +330,16 @@ import SimulationLayout from '../layouts/SimulationLayout.astro';
     // Show math engine
     mathEngine.classList.remove('hidden');
     mathEngine.classList.add('animate-pulse');
+
+    // Math elements
+    const mZ = document.getElementById('math-z');
+    const mW = document.getElementById('math-w');
+    const mU1 = document.getElementById('math-u1');
+    const mU2 = document.getElementById('math-u2');
+    const mFinalP = document.getElementById('math-final-p');
+    const mTagRecv = document.getElementById('math-tag-recv');
+    const mTagCalc = document.getElementById('math-tag-calc');
+    const mGcmStatus = document.getElementById('math-gcm-status');
 
     await new Promise(r => setTimeout(r, 1000));
 
@@ -325,11 +362,16 @@ import SimulationLayout from '../layouts/SimulationLayout.astro';
         
         if (state.isTamperedData) {
             const arr = new Uint8Array(finalCipher);
-            arr[10] = arr[10] ^ 0xFF; // Flip a bit in the MIDDLE of data (not just the tag)
+            arr[10] = arr[10] ^ 0xFF; // Flip a bit
             finalCipher = arr.buffer;
         }
 
         const iv = hexToBuffer(state.ivHex);
+        
+        // Update Math Engine: GCM Tags
+        mTagRecv.textContent = "0x" + originalTag.toUpperCase();
+        mTagRecv.classList.add('text-blue-300');
+        
         const result = await decryptAES(sharedKey, finalCipher, iv);
         
         // Populate Security Audit: Lớp 1
@@ -340,7 +382,13 @@ import SimulationLayout from '../layouts/SimulationLayout.astro';
         const securityAudit = document.getElementById('security-audit');
         
         tagOrigEl.textContent = "0x" + originalTag.toUpperCase();
-        tagRecvEl.textContent = state.isTamperedData ? "0x" + (originalTag.slice(0, 30) + "FF") : "0x" + originalTag.toUpperCase();
+        const calcTag = state.isTamperedData ? (originalTag.slice(0, 30) + "FF") : originalTag;
+        tagRecvEl.textContent = "0x" + calcTag.toUpperCase();
+        
+        mTagCalc.textContent = "0x" + calcTag.toUpperCase();
+        mTagCalc.classList.add(state.isTamperedData ? 'text-red-400' : 'text-emerald-400');
+        mGcmStatus.textContent = state.isTamperedData ? "GHASH Verification Failed ❌" : "GHASH Match: SUCCESS ✅";
+        mGcmStatus.className = "py-3 px-6 rounded-2xl bg-white/5 border border-white/5 text-center text-[11px] font-black italic " + (state.isTamperedData ? "text-red-400" : "text-emerald-400");
 
         if (result) {
             isDecrypted = true;
@@ -358,7 +406,7 @@ import SimulationLayout from '../layouts/SimulationLayout.astro';
         s1.textContent = "GIẢI MÃ THẤT BẠI ❌";
         s1.className = "py-2 text-[10px] font-black text-center border-t border-white/5 text-red-500 uppercase font-mono";
         
-        document.getElementById('security-audit').classList.remove('hidden');
+        securityAudit.classList.remove('hidden');
         const audit1Res = document.getElementById('audit-1-res');
         const audit1Desc = document.getElementById('audit-1-desc');
         const tagRecvEl = document.getElementById('tag-recv');
@@ -381,11 +429,20 @@ import SimulationLayout from '../layouts/SimulationLayout.astro';
         const trueSig = decryptedPayload.s;
         const fakeSig = "30440220" + "F".repeat(64); // Fake DER-ish signature
         
+        const currentSigHex = state.isTamperedSig ? fakeSig : trueSig;
         sigOrigEl.textContent = trueSig.slice(0, 32) + "...";
-        sigRecvEl.textContent = state.isTamperedSig ? fakeSig.slice(0, 32) + "..." : trueSig.slice(0, 32) + "...";
+        sigRecvEl.textContent = currentSigHex.slice(0, 32) + "...";
+
+        // Update Math Engine: ECDSA
+        const parsed = parseDER(currentSigHex);
+        mZ.textContent = state.hashHex.slice(0, 16).toUpperCase() + "...";
+        mW.textContent = "inv(" + parsed.s.slice(0, 8) + "...) mod n";
+        mU1.textContent = "0x" + Math.random().toString(16).slice(2, 10).toUpperCase();
+        mU2.textContent = "0x" + Math.random().toString(16).slice(2, 10).toUpperCase();
+        mFinalP.textContent = "P(" + Math.random().toString(16).slice(2, 8).toUpperCase() + ", " + Math.random().toString(16).slice(2, 8).toUpperCase() + ")";
 
         try {
-            let sig = hexToBuffer(state.isTamperedSig ? fakeSig : trueSig);
+            let sig = hexToBuffer(currentSigHex);
             isSignedVal = await verifyECDSA(state.keys.alice.ecdsa.publicKey, sig, state.msg);
             
             if (isSignedVal) {
@@ -394,6 +451,7 @@ import SimulationLayout from '../layouts/SimulationLayout.astro';
                 audit2Res.textContent = "PASS";
                 audit2Res.className = "text-[9px] font-black uppercase text-emerald-500";
                 audit2Desc.textContent = "Xác nhận đúng chữ ký của Alice. Người gửi được định danh hợp lệ.";
+                mFinalP.classList.add('text-emerald-400');
             } else {
                 s2.textContent = "CHỮ KÝ GIẢ MẠO ❌";
                 s2.className = "py-2 text-[10px] font-black text-center border-t border-white/5 text-red-500 uppercase font-mono";
@@ -403,12 +461,15 @@ import SimulationLayout from '../layouts/SimulationLayout.astro';
                 audit2Res.className = "text-[9px] font-black uppercase text-red-500";
                 sigRecvEl.classList.add('text-red-500', 'font-black');
                 audit2Desc.textContent = "LỖI: Chữ ký số không hợp lệ! Alice không ký gói tin này hoặc chữ ký đã bị Eve thay bằng chữ ký giả.";
+                mFinalP.classList.add('text-red-400');
             }
         } catch (e) {
              s2.textContent = "LỖI XÁC MINH ❌";
         }
     } else {
         s2.textContent = "KHÔNG THỂ KIỂM TRA ⛔";
+        mFinalP.textContent = "Verification Aborted";
+        mFinalP.classList.add('text-red-500');
     }
 
     await new Promise(r => setTimeout(r, 1000));

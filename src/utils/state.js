@@ -13,6 +13,7 @@ export const INITIAL_STATE = {
         bob: { ecdh: null }
     },
     sharedHex: '',
+    aesKeyHex: '',
     hashHex: '',
     signatureHex: '',
     ciphertextHex: '',
