@@ -225,10 +225,39 @@ import SimulationLayout from '../layouts/SimulationLayout.astro';
 
   async function init() {
     const state = await loadState();
-    const payload = JSON.stringify({ msg: state.msg, sig: state.signatureHex });
+    const payload = JSON.stringify({ m: state.msg, s: state.signatureHex });
     rawMsgDisp.textContent = payload.substring(0, 100) + "...";
     sharedStatus.textContent = state.aesKeyHex ? state.aesKeyHex.substring(0, 24).toUpperCase() + "..." : "SHARED_KEY_MISSING";
-    matrixCells.forEach(cell => cell.textContent = "00");
+    
+    if (state.ciphertextHex) {
+        statusTag.textContent = "Đã mã hóa ✅";
+        statusTag.classList.replace("bg-amber-500/10", "bg-emerald-500/10");
+        statusTag.classList.replace("text-amber-500", "text-emerald-500");
+
+        matrixCells.forEach(cell => {
+            cell.textContent = randomHex();
+            cell.classList.add('text-blue-400', 'bg-blue-500/5', 'border-blue-500/20');
+        });
+
+        roundText.textContent = `Round 10`;
+        roundBar.style.width = `100%`;
+
+        cipherBox.textContent = state.ciphertextHex.toUpperCase();
+        cipherBox.classList.remove('italic', 'text-slate-600');
+        cipherBox.classList.add('text-white', 'font-black');
+        
+        cipherFinal.classList.remove('hidden');
+        finalIv.textContent = state.ivHex.toUpperCase();
+
+        actionBtn.innerHTML = `
+          <span>TIẾP TỤC ĐẾN BƯỚC 6</span>
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12h14m-7-7 7 7-7 7"/></svg>
+        `;
+        actionBtn.classList.replace('bg-white', 'bg-emerald-500');
+        actionBtn.onclick = () => window.location.href = '/step6-transmission';
+    } else {
+        matrixCells.forEach(cell => cell.textContent = "00");
+    }
   }
 
   function randomHex() { return Math.floor(Math.random() * 256).toString(16).padStart(2, '0').toUpperCase(); }

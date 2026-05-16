@@ -226,6 +226,42 @@ import SimulationLayout from '../layouts/SimulationLayout.astro';
         hexPayload.textContent = state.ciphertextHex.toUpperCase();
         hexSig.textContent = state.signatureHex.toUpperCase();
     }
+
+    if (state.step >= 7) {
+        interceptMsg.textContent = "GÓI TIN ĐÃ TỚI ĐÍCH (BOB).";
+        interceptMsg.classList.replace('opacity-0', 'opacity-100');
+        interceptMsg.classList.add(state.isTamperedData || state.isTamperedSig ? 'text-red-500' : 'text-emerald-500');
+        
+        packet.style.left = 'calc(100% - 160px)';
+        packet.style.opacity = '0';
+        packet.style.transition = 'none';
+
+        secureBtn.classList.add('hidden');
+        actionBtn.innerHTML = `
+          <span>TỚI BƯỚC 7: XÁC THỰC</span>
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12h14m-7-7 7 7-7 7"/></svg>
+        `;
+        actionBtn.classList.replace('bg-white/10', 'bg-indigo-500');
+        actionBtn.classList.add('text-white', 'px-16');
+        actionBtn.onclick = () => window.location.href = '/step7-verification';
+
+        if (state.isTamperedData || state.isTamperedSig) {
+            isTamperedData = state.isTamperedData;
+            isTamperedSig = state.isTamperedSig;
+            updateStatus();
+            hackerView.classList.remove('hidden');
+            if (isTamperedData) {
+                labelPayload.textContent = "CORRUPTED ⚠️";
+                labelPayload.className = "text-[9px] px-2 py-0.5 bg-red-500/20 text-red-500 rounded border border-red-500/30";
+                hexPayload.className = "text-red-400 font-black italic break-all";
+            }
+            if (isTamperedSig) {
+                labelSig.textContent = "FORGED ⚠️";
+                labelSig.className = "text-[9px] px-2 py-0.5 bg-red-500/20 text-red-500 rounded border border-red-500/30";
+                hexSig.className = "text-amber-400 font-black italic break-all";
+            }
+        }
+    }
   }
 
   tamperDataBtn?.addEventListener('click', () => {

@@ -298,6 +298,39 @@ import SimulationLayout from '../layouts/SimulationLayout.astro';
             dispAlicePub.textContent = "Error exporting key";
         }
     }
+
+    if (state.verdict) {
+        // Recover final verdict screen
+        grid.classList.add('hidden');
+        actionBtn.classList.add('hidden');
+        verdict.classList.remove('hidden');
+        verdict.classList.replace('scale-95', 'scale-100');
+        verdict.classList.replace('opacity-0', 'opacity-100');
+
+        const isSuccess = state.verdict === 'SUCCESS';
+        const vIcon = document.getElementById('verdict-icon');
+        const vDesc = document.getElementById('verdict-desc');
+        const vTitle = document.getElementById('verdict-title');
+        const vCard = verdict.firstElementChild;
+
+        if (isSuccess) {
+            vCard.className = "p-8 rounded-[2.5rem] border-4 flex flex-col items-center gap-6 text-center shadow-[0_0_100px_rgba(0,0,0,0.3)] bg-emerald-500/10 border-emerald-500/30";
+            vIcon.className = "w-24 h-24 rounded-full flex items-center justify-center text-white bg-emerald-500";
+            vIcon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>`;
+            vTitle.textContent = "KẾT NỐI AN TOÀN TUYỆT ĐỐI";
+            vTitle.className = "text-4xl font-black uppercase tracking-tighter text-emerald-500";
+            vDesc.textContent = "Bob đã nhận được thông điệp gốc từ Alice. Chữ ký số và mã hóa AES đã bảo vệ dữ liệu thành công trước Hacker Eve.";
+            statusTag.textContent = "An toàn ✅";
+        } else {
+            vCard.className = "p-8 rounded-[2.5rem] border-4 flex flex-col items-center gap-6 text-center shadow-[0_0_100px_rgba(0,0,0,0.3)] bg-red-500/10 border-red-500/30";
+            vIcon.className = "w-24 h-24 rounded-full flex items-center justify-center text-white bg-red-500";
+            vIcon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>`;
+            vTitle.textContent = "PHÁT HIỆN TẤN CÔNG NGUY HIỂM";
+            vTitle.className = "text-4xl font-black uppercase tracking-tighter text-red-500";
+            vDesc.textContent = "Cảnh báo! Gói tin đã bị Hacker Eve can thiệp. Quy trình xác thực của Bob đã chặn dữ liệu độc hại kịp thời.";
+            statusTag.textContent = "BỊ TẤN CÔNG ⚠️";
+        }
+    }
   }
 
   // Simple DER parser for ECDSA (30 <len> 02 <len_r> <r> 02 <len_s> <s>)

@@ -169,6 +169,28 @@ import SimulationLayout from '../layouts/SimulationLayout.astro';
   async function init() {
     const state = await loadState();
     if (state.hashHex) hashDisplay.textContent = state.hashHex.toUpperCase();
+
+    if (state.signatureHex) {
+        statusTag.textContent = "Đã ký ✅";
+        statusTag.classList.replace("bg-amber-500/10", "bg-emerald-500/10");
+        statusTag.classList.replace("text-amber-500", "text-emerald-500");
+
+        dDisplay.textContent = "PRIVATE_KEY_SECURE_LOADED";
+        dDisplay.classList.replace('text-slate-400', 'text-red-400');
+        kDisplay.textContent = "k = [PREVIOUSLY_GENERATED]";
+        kDisplay.classList.replace('text-slate-500', 'text-blue-400');
+
+        sigOutput.textContent = state.signatureHex.toUpperCase();
+        sigOutput.classList.remove('italic', 'text-slate-600');
+        sigOutput.classList.add('text-white', 'font-black');
+
+        actionBtn.innerHTML = `
+          <span>TIẾP TỤC BƯỚC 5</span>
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12h14m-7-7 7 7-7 7"/></svg>
+        `;
+        actionBtn.classList.replace('bg-white', 'bg-purple-500');
+        actionBtn.onclick = () => window.location.href = '/step5-encryption';
+    }
   }
 
   actionBtn?.addEventListener('click', async () => {

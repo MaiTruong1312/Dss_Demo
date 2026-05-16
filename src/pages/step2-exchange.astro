@@ -159,6 +159,31 @@ import SimulationLayout from '../layouts/SimulationLayout.astro';
   const bobSerial = document.getElementById('bob-serial');
   const mathFormula = document.getElementById('math-formula');
 
+  async function init() {
+    const state = await loadState();
+    if (state.sharedHex) {
+        statusTag.textContent = "Đồng thuận ✅";
+        statusTag.classList.replace("bg-amber-500/10", "bg-emerald-500/10");
+        statusTag.classList.replace("text-amber-500", "text-emerald-500");
+
+        aliceSerial.classList.remove('hidden');
+        bobSerial.classList.remove('hidden');
+        mathFormula.classList.remove('opacity-0', 'translate-y-4');
+        
+        secretHex.textContent = state.sharedHex;
+        resultArea.classList.remove('hidden');
+
+        actionBtn.innerHTML = `
+          <span>TIẾP TỤC BƯỚC 3</span>
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12h14m-7-7 7 7-7 7"/></svg>
+        `;
+        actionBtn.classList.replace('bg-white', 'bg-emerald-500');
+        actionBtn.onclick = () => window.location.href = '/step3-hashing';
+    }
+  }
+
+  init();
+
   actionBtn?.addEventListener('click', async () => {
     actionBtn.disabled = true;
     const state = await loadState();
@@ -197,7 +222,7 @@ import SimulationLayout from '../layouts/SimulationLayout.astro';
     const hex = bufferToHex(sharedBits);
 
     state.sharedHex = hex;
-    state.step = 3;
+    state.step = Math.max(state.step, 3);
     await saveState(state);
 
     secretHex.textContent = hex;

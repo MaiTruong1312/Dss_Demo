@@ -192,8 +192,65 @@ import SimulationLayout from '../layouts/SimulationLayout.astro';
       }
   }
 
+  async function init() {
+    const state = await loadState();
+    if (state.keys.alice.ecdh && state.keys.alice.ecdsa) {
+        // Recover UI state
+        statusTag.textContent = "Hoàn tất";
+        statusTag.classList.replace("bg-amber-500/10", "bg-emerald-500/10");
+        statusTag.classList.replace("text-amber-500", "text-emerald-500");
+
+        const aliceRawECDH = await exportRawPublicKey(state.keys.alice.ecdh.publicKey);
+        const aliceRawECDSA = await exportRawPublicKey(state.keys.alice.ecdsa.publicKey);
+        const bobRawECDH = await exportRawPublicKey(state.keys.bob.ecdh.publicKey);
+
+        resultD.textContent = "ALREADY GENERATED";
+        resultD.classList.replace('text-red-500/50', 'text-red-500');
+        
+        resultQ.textContent = aliceRawECDH.substring(0, 16) + "...";
+        resultQ.classList.replace('text-cyan-500/50', 'text-cyan-400');
+        
+        mathD.classList.replace('opacity-20', 'opacity-100');
+        mathQ.classList.replace('opacity-20', 'opacity-100');
+        mathStatus.textContent = "ECC Math Combined ✅";
+
+        summarySec.classList.remove('opacity-40', 'pointer-events-none');
+        document.getElementById('alice-final').innerHTML = `
+            <div class="space-y-1">
+                <div class="text-[8px] font-black text-cyan-500/50">ALICE ECDH (PUBLIC)</div>
+                <div class="text-[9px] font-mono text-slate-400 break-all leading-tight bg-slate-950 p-2 rounded border border-white/5">
+                    <span class="text-slate-600">3059...034200</span><span class="text-cyan-400">${aliceRawECDH.substring(0, 32)}...</span>
+                </div>
+            </div>
+            <div class="space-y-1">
+                <div class="text-[8px] font-black text-indigo-500/50">ALICE ECDSA (SIGNING)</div>
+                <div class="text-[9px] font-mono text-slate-400 break-all leading-tight bg-slate-950 p-2 rounded border border-white/5">
+                    <span class="text-slate-600">3059...034200</span><span class="text-indigo-400">${aliceRawECDSA.substring(0, 32)}...</span>
+                </div>
+            </div>
+        `;
+
+        document.getElementById('bob-final').innerHTML = `
+            <div class="space-y-1">
+                <div class="text-[8px] font-black text-cyan-500/50">BOB ECDH (PUBLIC)</div>
+                <div class="text-[9px] font-mono text-slate-400 break-all leading-tight bg-slate-950 p-2 rounded border border-white/5 text-right">
+                    <span class="text-slate-600">3059...034200</span><span class="text-cyan-400">${bobRawECDH.substring(0, 32)}...</span>
+                </div>
+            </div>
+        `;
+
+        actionBtn.innerHTML = `
+          <span>TIẾP TỤC BƯỚC 2</span>
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12h14m-7-7 7 7-7 7"/></svg>
+        `;
+        actionBtn.classList.replace('bg-white', 'bg-cyan-500');
+        actionBtn.onclick = () => window.location.href = '/step2-exchange';
+    }
+  }
+
   window.addEventListener('resize', initCanvas);
   initCanvas();
+  init();
 
   actionBtn?.addEventListener('click', async () => {
     if (isGenerating) return;
@@ -239,20 +296,16 @@ import SimulationLayout from '../layouts/SimulationLayout.astro';
     const aliceECDSA = await generateECDSAKeys();
     const bobECDH = await generateECDHKeys();
 
-    const alicePubECDH = await exportPublicKey(aliceECDH.publicKey);
-    const alicePubECDSA = await exportPublicKey(aliceECDSA.publicKey);
-    const bobPubECDH = await exportPublicKey(bobECDH.publicKey);
-
-    // Get Raw Hex for visual proof of entropy
-    const aliceRawECDH = await exportRawPublicKey(aliceECDH.publicKey);
-    const aliceRawECDSA = await exportRawPublicKey(aliceECDSA.publicKey);
-    const bobRawECDH = await exportRawPublicKey(bobECDH.publicKey);
-
+    // Export keys to JWK for state
     state.keys.alice.ecdh = aliceECDH;
     state.keys.alice.ecdsa = aliceECDSA;
     state.keys.bob.ecdh = bobECDH;
-    state.step = 2;
+    state.step = Math.max(state.step, 2);
     await saveState(state);
+
+    const aliceRawECDH = await exportRawPublicKey(aliceECDH.publicKey);
+    const aliceRawECDSA = await exportRawPublicKey(aliceECDSA.publicKey);
+    const bobRawECDH = await exportRawPublicKey(bobECDH.publicKey);
 
     resultQ.textContent = aliceRawECDH.substring(0, 16) + "...";
     resultQ.classList.replace('text-cyan-500/50', 'text-cyan-400');
@@ -296,7 +349,6 @@ import SimulationLayout from '../layouts/SimulationLayout.astro';
       <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12h14m-7-7 7 7-7 7"/></svg>
     `;
     actionBtn.classList.replace('bg-white', 'bg-cyan-500');
-    actionBtn.classList.replace('text-slate-950', 'text-slate-950');
     actionBtn.disabled = false;
     actionBtn.onclick = () => window.location.href = '/step2-exchange';
   });

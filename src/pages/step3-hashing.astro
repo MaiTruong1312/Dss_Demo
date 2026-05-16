@@ -176,12 +176,37 @@ import SimulationLayout from '../layouts/SimulationLayout.astro';
     if (sharedSecretInput) sharedSecretInput.textContent = state.sharedHex || "N/A";
     
     // Render initial message grid
+    charGrid.innerHTML = ''; // Clear first
     state.msg.split('').forEach((char, i) => {
         const span = document.createElement('span');
         span.className = 'w-8 h-8 flex items-center justify-center bg-white/5 border border-white/10 rounded text-slate-400 text-sm font-bold transition-all';
         span.textContent = char;
         charGrid?.appendChild(span);
     });
+
+    if (state.hashHex) {
+        statusTag.textContent = "Hoàn tất";
+        statusTag.classList.replace("bg-amber-500/10", "bg-emerald-500/10");
+        statusTag.classList.replace("text-amber-500", "text-emerald-500");
+
+        if (state.aesKeyHex) {
+            derivedKeyOutput.textContent = state.aesKeyHex.substring(0, 16) + "...";
+            derivedKeyOutput.classList.replace('text-emerald-500/50', 'text-emerald-400');
+            derivedKeyOutput.classList.add('font-black');
+        }
+
+        charStatus.textContent = "Hàm băm đã hội tụ! ✅";
+        hashBox.textContent = state.hashHex.toUpperCase();
+        hashBox.classList.add('text-white', 'text-lg', 'font-black');
+        hashBox.classList.remove('italic', 'text-slate-600');
+
+        actionBtn.innerHTML = `
+          <span>TIẾP TỤC ĐẾN BƯỚC 4</span>
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12h14m-7-7 7 7-7 7"/></svg>
+        `;
+        actionBtn.classList.replace('bg-white', 'bg-emerald-500');
+        actionBtn.onclick = () => window.location.href = '/step4-signing';
+    }
   }
 
   function randomHex(len = 8) {
