@@ -22,14 +22,30 @@ import SimulationLayout from '../layouts/SimulationLayout.astro';
                 <div class="text-[10px] uppercase font-black tracking-widest text-cyan-400">1. Phần Ngẫu Nhiên (Entropy)</div>
                 <div id="entropy-percent" class="text-[10px] font-mono text-cyan-400/50">0%</div>
             </div>
-            <div class="h-32 bg-slate-950/50 rounded-2xl border border-white/5 relative overflow-hidden flex items-center justify-center">
-                <canvas id="entropy-canvas" class="absolute inset-0 opacity-40"></canvas>
-                <div id="entropy-msg" class="text-[10px] font-bold text-slate-500 text-center px-4 z-10 uppercase tracking-tighter">
-                    Thu thập nhiễu hệ thống...
+            
+            <!-- Entropy Dashboard -->
+            <div class="bg-black/40 p-4 rounded-2xl border border-white/5 text-[10px] font-mono space-y-2.5 relative overflow-hidden">
+                <div class="absolute inset-0 bg-cyan-500/5 pointer-events-none animate-pulse"></div>
+                <div class="flex justify-between items-center relative z-10">
+                    <span class="text-slate-500">MÚT CLICK CHUỘT:</span>
+                    <span id="click-count" class="text-cyan-400 font-bold">0 lần</span>
+                </div>
+                <div class="flex justify-between items-center relative z-10">
+                    <span class="text-slate-500">NHIỆT ĐỘ CPU (CẢM BIẾN):</span>
+                    <span id="cpu-temp" class="text-cyan-400 font-bold">45.2 °C</span>
+                </div>
+                <div class="flex justify-between items-center relative z-10">
+                    <span class="text-slate-500">THỜI GIAN HỆ THỐNG:</span>
+                    <span id="timestamp-val" class="text-cyan-400 font-bold">Waiting...</span>
+                </div>
+                <div class="flex justify-between items-center pt-2.5 border-t border-white/5 relative z-10">
+                    <span class="text-slate-500">HỖN HỢP NHIỄU (SEED):</span>
+                    <span id="seed-hash" class="text-emerald-400 font-black truncate max-w-[120px]">...</span>
                 </div>
             </div>
+            
             <p class="text-[10px] text-slate-400 leading-relaxed italic">
-                Máy tính lấy "nhiễu" từ hệ thống (chuột, nhiệt độ CPU...) để đảm bảo <strong>Private Key</strong> không thể đoán trước.
+                Hệ điều hành liên tục dồn các "nhiễu" ngẫu nhiên này vào một bể chứa để sinh ra **Private Key (d)** không thể dự đoán trước.
             </p>
         </div>
 
@@ -160,10 +176,11 @@ import SimulationLayout from '../layouts/SimulationLayout.astro';
   const actionBtn = document.getElementById('action-btn');
   const statusTag = document.getElementById('status-tag');
   
-  const canvas = document.getElementById('entropy-canvas') as HTMLCanvasElement;
-  const ctx = canvas.getContext('2d');
   const entropyPercent = document.getElementById('entropy-percent');
-  const entropyMsg = document.getElementById('entropy-msg');
+  const clickCountEl = document.getElementById('click-count');
+  const cpuTempEl = document.getElementById('cpu-temp');
+  const timestampValEl = document.getElementById('timestamp-val');
+  const seedHashEl = document.getElementById('seed-hash');
 
   const mathQ = document.getElementById('math-q');
   const mathD = document.getElementById('math-d');
@@ -174,25 +191,60 @@ import SimulationLayout from '../layouts/SimulationLayout.astro';
   const summarySec = document.getElementById('summary-section');
 
   let isGenerating = false;
+  let clickCount = 0;
+  let cpuTemp = 45.2;
 
-  function initCanvas() {
-      if (!canvas) return;
-      canvas.width = canvas.parentElement.clientWidth;
-      canvas.height = canvas.parentElement.clientHeight;
+  // Track Mouse Clicks
+  window.addEventListener('click', () => {
+      clickCount++;
+      if (clickCountEl) clickCountEl.textContent = clickCount + " lần";
+      updateEntropyMix();
+  });
+
+  // Query real Windows CPU Load and temperature from Node.js backend
+  async function fetchRealSystemStats() {
+      try {
+          const res = await fetch('/api/system-stats');
+          const data = await res.json();
+          if (data && data.success) {
+              cpuTemp = data.cpuTemp;
+              if (cpuTempEl) {
+                  cpuTempEl.innerHTML = `${cpuTemp} °C <span class="text-[7px] px-1 py-0.5 bg-emerald-500/20 text-emerald-400 rounded border border-emerald-500/30 ml-1 font-black tracking-widest uppercase">REAL</span>`;
+              }
+              updateEntropyMix();
+          }
+      } catch (err) {
+          console.error("Failed to fetch backend stats:", err);
+      }
   }
 
-  function drawEntropy(progress) {
-      if (!ctx) return;
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = "#22d3ee";
-      for (let i = 0; i < progress * 100; i++) {
-          ctx.beginPath();
-          ctx.arc(Math.random() * canvas.width, Math.random() * canvas.height, 1, 0, Math.PI * 2);
-          ctx.fill();
+  // Fetch every 1.5 seconds
+  setInterval(fetchRealSystemStats, 1500);
+  fetchRealSystemStats();
+
+  // High Precision Time Tracker
+  setInterval(() => {
+      if (timestampValEl) {
+          timestampValEl.textContent = (window.performance.now() + Date.now()).toFixed(3);
+      }
+  }, 47);
+
+  // Compute Seed Hash Realtime from gathered parameters
+  async function updateEntropyMix() {
+      const rawData = `${clickCount}-${cpuTemp}-${performance.now() + Date.now()}`;
+      const encoder = new TextEncoder();
+      const data = encoder.encode(rawData);
+      const hashBuffer = await window.crypto.subtle.digest("SHA-256", data);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+      
+      if (seedHashEl) {
+          seedHashEl.textContent = hashHex.substring(0, 16).toUpperCase() + "...";
       }
   }
 
   async function init() {
+    updateEntropyMix();
     const state = await loadState();
     if (state.keys.alice.ecdh && state.keys.alice.ecdsa) {
         // Recover UI state
@@ -213,6 +265,7 @@ import SimulationLayout from '../layouts/SimulationLayout.astro';
         mathD.classList.replace('opacity-20', 'opacity-100');
         mathQ.classList.replace('opacity-20', 'opacity-100');
         mathStatus.textContent = "ECC Math Combined ✅";
+        if (entropyPercent) entropyPercent.textContent = "100%";
 
         summarySec.classList.remove('opacity-40', 'pointer-events-none');
         document.getElementById('alice-final').innerHTML = `
@@ -248,8 +301,6 @@ import SimulationLayout from '../layouts/SimulationLayout.astro';
     }
   }
 
-  window.addEventListener('resize', initCanvas);
-  initCanvas();
   init();
 
   actionBtn?.addEventListener('click', async () => {
@@ -261,18 +312,14 @@ import SimulationLayout from '../layouts/SimulationLayout.astro';
     statusTag.classList.replace("bg-amber-500/10", "bg-cyan-500/10");
     statusTag.classList.replace("text-amber-500", "text-cyan-500");
 
-    // --- STEP 1: ENTROPY ---
-    entropyMsg.textContent = "Collecting Noise...";
-    for (let p = 0; p <= 100; p += 2) {
-        entropyPercent.textContent = p + "%";
-        drawEntropy(p / 100);
-        await new Promise(r => setTimeout(r, 20));
+    // --- STEP 1: ENTROPY COLLECTION ANIMATION ---
+    for (let p = 0; p <= 100; p += 4) {
+        if (entropyPercent) entropyPercent.textContent = p + "%";
+        await new Promise(r => setTimeout(r, 30));
     }
-    entropyMsg.textContent = "Entropy Gathered";
-    entropyMsg.classList.add('text-cyan-400');
 
     // --- STEP 2: PRIVATE KEY (d) ---
-    mathStatus.textContent = "Selecting Random d...";
+    mathStatus.textContent = "Mixing Entropy to d...";
     const rawD = window.crypto.getRandomValues(new Uint8Array(32));
     const dHex = bufferToHex(rawD);
     resultD.textContent = dHex.substring(0, 16) + "...";

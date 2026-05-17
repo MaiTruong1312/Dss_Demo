@@ -55,15 +55,53 @@ import SimulationLayout from '../layouts/SimulationLayout.astro';
                 </div>
             </div>
 
-            <!-- KDF Concept (Integrated) -->
+            <!-- Advanced Key Derivation from Shared Secret (SS) Panel -->
             <div class="w-full lg:w-1/2 space-y-4">
-                <div class="text-[10px] uppercase font-black tracking-widest text-blue-400">Biến đổi Khóa (KDF Phase)</div>
-                <div class="flex items-center justify-center gap-6 bg-slate-900/50 p-6 rounded-3xl border border-white/5">
-                    <div id="shared-secret-input" class="text-[9px] font-mono text-slate-500 break-all w-24 text-center truncate italic">Shared Secret</div>
-                    <div class="w-8 h-8 rounded-full border border-blue-500/30 flex items-center justify-center text-blue-400 animate-spin-slow">SHA</div>
-                    <div id="derived-key-output" class="text-[9px] font-mono text-emerald-500/50 break-all w-24 text-center italic">AES Key</div>
+                <div class="text-[10px] uppercase font-black tracking-widest text-blue-400">Trích xuất Khóa đa nhiệm từ SS (Key Derivation)</div>
+                <div class="bg-slate-900/50 p-6 rounded-3xl border border-white/5 space-y-4">
+                    <!-- Input Shared Secret -->
+                    <div class="flex items-center justify-between p-2 bg-slate-950 rounded-xl border border-white/5">
+                        <div class="text-[8px] font-black text-slate-500 uppercase">Shared Secret (SS gốc)</div>
+                        <div id="shared-secret-input" class="text-[9px] font-mono text-slate-400 break-all w-48 text-right truncate italic">Shared Secret</div>
+                    </div>
+                    
+                    <!-- KDF Core Ring -->
+                    <div class="flex items-center justify-center gap-2 py-1">
+                        <div class="h-px bg-blue-500/20 flex-1"></div>
+                        <div class="px-3 py-1 rounded-full border border-blue-500/30 text-[9px] font-black text-blue-400 bg-blue-950 animate-pulse flex items-center gap-2">
+                            <span class="animate-spin inline-block w-2 h-2 border-t border-r border-blue-400 rounded-full"></span>
+                            HÀM TRÍCH XUẤT KDF (SHA-256)
+                        </div>
+                        <div class="h-px bg-blue-500/20 flex-1"></div>
+                    </div>
+                    
+                    <!-- Derived Sub-keys (Multiple Uses of SS) -->
+                    <div class="grid grid-cols-3 gap-2">
+                        <!-- Key 1: Encryption -->
+                        <div class="p-3 bg-slate-950 rounded-xl border border-cyan-500/10 flex flex-col items-center gap-1">
+                            <div class="text-[7px] font-black text-cyan-400 uppercase tracking-widest">1. KHÓA AES</div>
+                            <div id="derived-key-enc" class="text-[8px] font-mono text-slate-600 break-all text-center leading-tight truncate w-full italic">Chờ KDF...</div>
+                            <div class="text-[6px] text-slate-500 text-center scale-90 mt-1">Mã hóa tin nhắn (Bước 5)</div>
+                        </div>
+                        
+                        <!-- Key 2: IV Seed -->
+                        <div class="p-3 bg-slate-950 rounded-xl border border-amber-500/10 flex flex-col items-center gap-1">
+                            <div class="text-[7px] font-black text-amber-400 uppercase tracking-widest">2. IV SEED</div>
+                            <div id="derived-key-iv" class="text-[8px] font-mono text-slate-600 break-all text-center leading-tight truncate w-full italic">Chờ KDF...</div>
+                            <div class="text-[6px] text-slate-500 text-center scale-90 mt-1">Khởi tạo IV (Bước 5)</div>
+                        </div>
+                        
+                        <!-- Key 3: MAC Key -->
+                        <div class="p-3 bg-slate-950 rounded-xl border border-purple-500/10 flex flex-col items-center gap-1">
+                            <div class="text-[7px] font-black text-purple-400 uppercase tracking-widest">3. KHÓA MAC</div>
+                            <div id="derived-key-mac" class="text-[8px] font-mono text-slate-600 break-all text-center leading-tight truncate w-full italic">Chờ KDF...</div>
+                            <div class="text-[6px] text-slate-500 text-center scale-90 mt-1">Kẹp chì GCM (Bước 7)</div>
+                        </div>
+                    </div>
                 </div>
-                <p class="text-[9px] text-slate-500 italic text-center">Mã băm không chỉ dành cho dữ liệu mà còn để "nén" Shared Secret thành khóa AES chuẩn.</p>
+                <p class="text-[8px] text-slate-500 italic text-center">
+                    * Nhờ KDF, hạt giống bí mật **SS** được phân tách thành 3 loại khóa chuyên biệt phục vụ các nhiệm vụ khác nhau, tối đa hóa tính độc lập bảo mật.
+                </p>
             </div>
         </div>
     </div>
@@ -159,7 +197,9 @@ import SimulationLayout from '../layouts/SimulationLayout.astro';
   const statusTag = document.getElementById('status-tag');
   
   const sharedSecretInput = document.getElementById('shared-secret-input');
-  const derivedKeyOutput = document.getElementById('derived-key-output');
+  const derivedKeyEnc = document.getElementById('derived-key-enc');
+  const derivedKeyIv = document.getElementById('derived-key-iv');
+  const derivedKeyMac = document.getElementById('derived-key-mac');
 
   // Math Display Elements
   const mXor = document.getElementById('math-xor');
@@ -190,9 +230,19 @@ import SimulationLayout from '../layouts/SimulationLayout.astro';
         statusTag.classList.replace("text-amber-500", "text-emerald-500");
 
         if (state.aesKeyHex) {
-            derivedKeyOutput.textContent = state.aesKeyHex.substring(0, 16) + "...";
-            derivedKeyOutput.classList.replace('text-emerald-500/50', 'text-emerald-400');
-            derivedKeyOutput.classList.add('font-black');
+            const kdfHex = state.aesKeyHex;
+            if (derivedKeyEnc) {
+                derivedKeyEnc.textContent = kdfHex.substring(0, 10).toUpperCase() + "...";
+                derivedKeyEnc.className = "text-[8px] font-mono text-cyan-400 break-all text-center leading-tight truncate w-full font-black";
+            }
+            if (derivedKeyIv) {
+                derivedKeyIv.textContent = kdfHex.substring(10, 20).toUpperCase() + "...";
+                derivedKeyIv.className = "text-[8px] font-mono text-amber-400 break-all text-center leading-tight truncate w-full font-black";
+            }
+            if (derivedKeyMac) {
+                derivedKeyMac.textContent = kdfHex.substring(20, 30).toUpperCase() + "...";
+                derivedKeyMac.className = "text-[8px] font-mono text-purple-400 break-all text-center leading-tight truncate w-full font-black";
+            }
         }
 
         charStatus.textContent = "Hàm băm đã hội tụ! ✅";
@@ -240,7 +290,10 @@ import SimulationLayout from '../layouts/SimulationLayout.astro';
     statusTag.classList.replace("text-amber-500", "text-orange-500");
 
     // --- PHASE 1: KDF (Slowed) ---
-    derivedKeyOutput.textContent = "Computing KDF...";
+    if (derivedKeyEnc) derivedKeyEnc.textContent = "Computing...";
+    if (derivedKeyIv) derivedKeyIv.textContent = "Computing...";
+    if (derivedKeyMac) derivedKeyMac.textContent = "Computing...";
+    
     for(let i=0; i<5; i++) {
         updateMathDisplay();
         await new Promise(r => setTimeout(r, 200));
@@ -248,9 +301,19 @@ import SimulationLayout from '../layouts/SimulationLayout.astro';
     const kdfBuffer = await hashSHA256(state.sharedHex || "SYSTEM_SEED");
     const kdfHex = bufferToHex(kdfBuffer);
     state.aesKeyHex = kdfHex;
-    derivedKeyOutput.textContent = kdfHex.substring(0, 16) + "...";
-    derivedKeyOutput.classList.replace('text-emerald-500/50', 'text-emerald-400');
-    derivedKeyOutput.classList.add('font-black');
+    
+    if (derivedKeyEnc) {
+        derivedKeyEnc.textContent = kdfHex.substring(0, 10).toUpperCase() + "...";
+        derivedKeyEnc.className = "text-[8px] font-mono text-cyan-400 break-all text-center leading-tight truncate w-full font-black";
+    }
+    if (derivedKeyIv) {
+        derivedKeyIv.textContent = kdfHex.substring(10, 20).toUpperCase() + "...";
+        derivedKeyIv.className = "text-[8px] font-mono text-amber-400 break-all text-center leading-tight truncate w-full font-black";
+    }
+    if (derivedKeyMac) {
+        derivedKeyMac.textContent = kdfHex.substring(20, 30).toUpperCase() + "...";
+        derivedKeyMac.className = "text-[8px] font-mono text-purple-400 break-all text-center leading-tight truncate w-full font-black";
+    }
 
     // --- PHASE 2: Message Hashing SLOWED ---
     msg.split('').forEach((char, i) => {

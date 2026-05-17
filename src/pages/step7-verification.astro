@@ -550,11 +550,11 @@ import SimulationLayout from '../layouts/SimulationLayout.astro';
     // LAYER 3: INTEGRITY (Recalculate hash for visualization)
     if (isDecrypted && decryptedPayload) {
         dispHash.textContent = state.hashHex.toUpperCase();
-        s3.textContent = (isDecrypted && isSignedVal) ? "TOÀN VẸN 100% ✅" : "DỮ LIỆU ĐÃ BỊ SỬA ❌";
+        s3.textContent = (isDecrypted && isSignedVal) ? "TOÀN VẸN 100% ✅" : "CHỮ KÝ ĐÃ BỊ THAY ĐỔI ❌";
         s3.className = (isDecrypted && isSignedVal) ? "py-2 text-[10px] font-black text-center border-t border-white/5 text-emerald-400 uppercase" : "py-2 text-[10px] font-black text-center border-t border-white/5 text-red-500 uppercase";
         dispHash.classList.replace('text-slate-600', (isDecrypted && isSignedVal) ? 'text-emerald-400' : 'text-red-400');
     } else {
-        s3.textContent = "LỖI TOÀN VẸN ❌";
+        s3.textContent = "DỮ LIỆU ĐÃ BỊ SỬA ❌";
         s3.className = "py-2 text-[10px] font-black text-center border-t border-white/5 text-red-500 uppercase";
     }
 
