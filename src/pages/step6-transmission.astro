@@ -61,14 +61,20 @@ import SimulationLayout from '../layouts/SimulationLayout.astro';
                 ⚠️ Đang chờ lệnh truyền tải...
             </div>
             
-            <div class="flex flex-wrap justify-center gap-4">
-                <button id="tamper-data-btn" class="px-8 py-4 bg-red-500/10 border border-red-500/20 text-red-500 text-[10px] font-black rounded-2xl hover:bg-red-500/30 transition-all flex items-center gap-2 group shadow-xl">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                  TẤN CÔNG DỮ LIỆU (TAMPER)
+            <div class="flex flex-col md:flex-row justify-center gap-4">
+                <button id="tamper-data-btn" class="flex-1 p-4 bg-red-500/10 border border-red-500/20 text-red-500 rounded-2xl hover:bg-red-500/20 transition-all flex flex-col items-center justify-center gap-1 group shadow-xl">
+                  <div class="flex items-center gap-2 text-[11px] font-black uppercase">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                      TẤN CÔNG DỮ LIỆU (TAMPER)
+                  </div>
+                  <div class="text-[9px] text-red-400/80 font-medium tracking-wide">MỤC TIÊU: Làm sai lệch nội dung</div>
                 </button>
-                <button id="tamper-sig-btn" class="px-8 py-4 bg-amber-500/10 border border-amber-500/20 text-amber-500 text-[10px] font-black rounded-2xl hover:bg-amber-500/30 transition-all flex items-center gap-2 group">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M22 17H2"/><path d="M10 22h4"/><path d="M12 2v20"/><path d="m17 7-5-5-5 5"/></svg>
-                  GIẢ MẠO CHỮ KÝ (FORGE)
+                <button id="tamper-sig-btn" class="flex-1 p-4 bg-amber-500/10 border border-amber-500/20 text-amber-500 rounded-2xl hover:bg-amber-500/20 transition-all flex flex-col items-center justify-center gap-1 group">
+                  <div class="flex items-center gap-2 text-[11px] font-black uppercase">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M22 17H2"/><path d="M10 22h4"/><path d="M12 2v20"/><path d="m17 7-5-5-5 5"/></svg>
+                      GIẢ MẠO CHỮ KÝ (FORGE)
+                  </div>
+                  <div class="text-[9px] text-amber-500/80 font-medium tracking-wide">MỤC TIÊU: Mạo danh người gửi</div>
                 </button>
             </div>
         </div>
@@ -131,6 +137,10 @@ import SimulationLayout from '../layouts/SimulationLayout.astro';
                         <div id="hex-payload" class="text-slate-400 group-hover:text-slate-200 transition-colors">...</div>
                         <div id="payload-overlay" class="absolute inset-0 bg-red-500/0 pointer-events-none transition-colors duration-500"></div>
                     </div>
+                    <div id="tamper-explain" class="hidden p-4 bg-red-500/10 border border-red-500/20 rounded-xl mt-2 animate-in fade-in slide-in-from-top-2">
+                        <div class="text-[9px] font-black text-red-400 uppercase tracking-widest mb-1">MỤC ĐÍCH (TAMPER):</div>
+                        <div class="text-[10px] text-red-300/80 leading-relaxed">Eve sửa đổi (lật bit) bản mã. Vì không có khóa AES nên cô ta không giải mã được, chỉ đoán mò để thay đổi giá trị gốc (ví dụ đổi số tiền chuyển khoản).</div>
+                    </div>
                 </div>
 
                 <!-- Signature View -->
@@ -143,18 +153,11 @@ import SimulationLayout from '../layouts/SimulationLayout.astro';
                         <div id="hex-sig" class="text-slate-400 group-hover:text-slate-200 transition-colors">...</div>
                         <div id="sig-overlay" class="absolute inset-0 bg-red-500/0 pointer-events-none transition-colors duration-500"></div>
                     </div>
+                    <div id="forge-explain" class="hidden p-4 bg-amber-500/10 border border-amber-500/20 rounded-xl mt-2 animate-in fade-in slide-in-from-top-2">
+                         <div class="text-[9px] font-black text-amber-500 uppercase tracking-widest mb-1">MỤC ĐÍCH (FORGE):</div>
+                         <div class="text-[10px] text-amber-500/80 leading-relaxed">Eve ném bỏ chữ ký xịn và thay bằng chữ ký tự chế. Mục đích là đóng giả làm Alice để gửi các gói tin lừa đảo.</div>
+                    </div>
                 </div>
-            </div>
-
-            <div class="flex items-center gap-4 p-4 bg-red-500/5 rounded-2xl border border-red-500/10 border-dashed">
-                <div class="w-10 h-10 rounded-xl bg-red-500/20 flex items-center justify-center text-red-500">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
-                </div>
-                <div class="flex-1">
-                    <h5 class="text-[10px] font-black text-red-400 uppercase tracking-widest">Hành động của Eve</h5>
-                    <p class="text-[11px] text-slate-500 leading-relaxed mt-1">Sử dụng công cụ phía trên để bẻ gãy tính toàn vẹn của dữ liệu hoặc giả mạo chữ ký số của Alice.</p>
-                </div>
-            </div>
         </div>
     </div>
 
@@ -215,6 +218,9 @@ import SimulationLayout from '../layouts/SimulationLayout.astro';
   const payloadOverlay = document.getElementById('payload-overlay');
   const sigOverlay = document.getElementById('sig-overlay');
 
+  const tamperExplain = document.getElementById('tamper-explain');
+  const forgeExplain = document.getElementById('forge-explain');
+
   let isTransmitting = false;
   let isTamperedData = false;
   let isTamperedSig = false;
@@ -236,7 +242,21 @@ import SimulationLayout from '../layouts/SimulationLayout.astro';
         packet.style.opacity = '0';
         packet.style.transition = 'none';
 
-        secureBtn.classList.add('hidden');
+        secureBtn.classList.remove('hidden');
+        secureBtn.className = "px-10 py-5 bg-slate-800 text-white font-black rounded-2xl hover:bg-slate-700 transition-all flex items-center gap-3";
+        secureBtn.innerHTML = `
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+          <span>THỬ LẠI TRUYỀN TẢI</span>
+        `;
+        secureBtn.onclick = async () => {
+            state.step = 6;
+            delete state.verdict;
+            state.isTamperedData = false;
+            state.isTamperedSig = false;
+            await saveState(state);
+            window.location.reload();
+        };
+
         actionBtn.innerHTML = `
           <span>TỚI BƯỚC 7: XÁC THỰC</span>
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12h14m-7-7 7 7-7 7"/></svg>
@@ -251,14 +271,22 @@ import SimulationLayout from '../layouts/SimulationLayout.astro';
             updateStatus();
             hackerView.classList.remove('hidden');
             if (isTamperedData) {
-                labelPayload.textContent = "CORRUPTED ⚠️";
+                labelPayload.textContent = "CORRUPTED (BIT FLIP) ⚠️";
                 labelPayload.className = "text-[9px] px-2 py-0.5 bg-red-500/20 text-red-500 rounded border border-red-500/30";
-                hexPayload.className = "text-red-400 font-black italic break-all";
+                
+                let hex = state.ciphertextHex.toUpperCase();
+                let before = hex.substring(0, 20);
+                let after = hex.substring(22);
+                hexPayload.innerHTML = `<span class="text-slate-500 opacity-50">${before}</span><span class="text-red-500 font-black bg-red-500/20 px-1 rounded animate-pulse">FF</span><span class="text-slate-500 opacity-50">${after}</span>`;
+                tamperExplain.classList.remove('hidden');
             }
             if (isTamperedSig) {
-                labelSig.textContent = "FORGED ⚠️";
+                labelSig.textContent = "FORGED (REPLACED) ⚠️";
                 labelSig.className = "text-[9px] px-2 py-0.5 bg-red-500/20 text-red-500 rounded border border-red-500/30";
-                hexSig.className = "text-amber-400 font-black italic break-all";
+                
+                let fakeSig = "30440220" + "F".repeat(64);
+                hexSig.innerHTML = `<span class="text-amber-500 font-black bg-amber-500/10 rounded animate-pulse px-2 block">${fakeSig}</span>`;
+                forgeExplain.classList.remove('hidden');
             }
         }
     }
@@ -268,15 +296,21 @@ import SimulationLayout from '../layouts/SimulationLayout.astro';
     isTamperedData = !isTamperedData;
     tamperDataBtn.classList.toggle('bg-red-500/50', isTamperedData);
     if (isTamperedData) {
-        labelPayload.textContent = "CORRUPTED ⚠️";
+        labelPayload.textContent = "CORRUPTED (BIT FLIP) ⚠️";
         labelPayload.className = "text-[9px] px-2 py-0.5 bg-red-500/20 text-red-500 rounded border border-red-500/30";
         payloadOverlay.className = "absolute inset-0 bg-red-500/10 pointer-events-none transition-colors duration-200 animate-pulse";
-        hexPayload.className = "text-red-400 font-black italic break-all";
+        
+        let hex = state.ciphertextHex.toUpperCase();
+        let before = hex.substring(0, 20);
+        let after = hex.substring(22);
+        hexPayload.innerHTML = `<span class="text-slate-500 opacity-50">${before}</span><span class="text-red-500 font-black bg-red-500/20 px-1 rounded animate-pulse">FF</span><span class="text-slate-500 opacity-50">${after}</span>`;
+        tamperExplain.classList.remove('hidden');
     } else {
         labelPayload.textContent = "UNTOUCHED";
         labelPayload.className = "text-[9px] px-2 py-0.5 bg-emerald-500/10 text-emerald-500 rounded border border-emerald-500/20";
         payloadOverlay.className = "absolute inset-0 bg-red-500/0 pointer-events-none transition-colors duration-500";
-        hexPayload.className = "text-slate-400 break-all";
+        hexPayload.innerHTML = state.ciphertextHex.toUpperCase();
+        tamperExplain.classList.add('hidden');
     }
     updateStatus();
   });
@@ -285,15 +319,19 @@ import SimulationLayout from '../layouts/SimulationLayout.astro';
     isTamperedSig = !isTamperedSig;
     tamperSigBtn.classList.toggle('bg-amber-500/50', isTamperedSig);
     if (isTamperedSig) {
-        labelSig.textContent = "FORGED ⚠️";
+        labelSig.textContent = "FORGED (REPLACED) ⚠️";
         labelSig.className = "text-[9px] px-2 py-0.5 bg-red-500/20 text-red-500 rounded border border-red-500/30";
         sigOverlay.className = "absolute inset-0 bg-amber-500/10 pointer-events-none transition-colors duration-200 animate-pulse";
-        hexSig.className = "text-amber-400 font-black italic break-all";
+        
+        let fakeSig = "30440220" + "F".repeat(64);
+        hexSig.innerHTML = `<span class="text-amber-500 font-black bg-amber-500/10 rounded animate-pulse px-2 block break-all">${fakeSig}</span>`;
+        forgeExplain.classList.remove('hidden');
     } else {
         labelSig.textContent = "VERIFIED";
         labelSig.className = "text-[9px] px-2 py-0.5 bg-emerald-500/10 text-emerald-500 rounded border border-emerald-500/20";
         sigOverlay.className = "absolute inset-0 bg-red-500/0 pointer-events-none transition-colors duration-500";
-        hexSig.className = "text-slate-400 break-all";
+        hexSig.innerHTML = state.signatureHex.toUpperCase();
+        forgeExplain.classList.add('hidden');
     }
     updateStatus();
   });
@@ -339,6 +377,7 @@ import SimulationLayout from '../layouts/SimulationLayout.astro';
     state.isTamperedData = false;
     state.isTamperedSig = false;
     state.step = 7;
+    delete state.verdict; // Reset step 7 verification status
     await saveState(state);
 
     finishTransmission();
@@ -383,6 +422,7 @@ import SimulationLayout from '../layouts/SimulationLayout.astro';
         state.isTamperedData = isTamperedData;
         state.isTamperedSig = isTamperedSig;
         state.step = 7;
+        delete state.verdict; // Reset step 7 verification status
         await saveState(state);
 
         finishTransmission();
@@ -395,7 +435,22 @@ import SimulationLayout from '../layouts/SimulationLayout.astro';
     interceptMsg.classList.remove('animate-pulse');
 
     // Combine buttons into one "Next Step" button
-    secureBtn.classList.add('hidden');
+    secureBtn.classList.remove('hidden');
+    secureBtn.className = "px-10 py-5 bg-slate-800 text-white font-black rounded-2xl hover:bg-slate-700 transition-all flex items-center gap-3";
+    secureBtn.innerHTML = `
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+      <span>THỬ LẠI TRUYỀN TẢI</span>
+    `;
+    secureBtn.disabled = false;
+    secureBtn.onclick = async () => {
+        state.step = 6;
+        delete state.verdict;
+        state.isTamperedData = false;
+        state.isTamperedSig = false;
+        await saveState(state);
+        window.location.reload();
+    };
+
     actionBtn.innerHTML = `
       <span>TỚI BƯỚC 7: XÁC THỰC</span>
       <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12h14m-7-7 7 7-7 7"/></svg>

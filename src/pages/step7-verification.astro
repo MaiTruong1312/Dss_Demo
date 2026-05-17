@@ -322,12 +322,41 @@ import SimulationLayout from '../layouts/SimulationLayout.astro';
             vDesc.textContent = "Bob đã nhận được thông điệp gốc từ Alice. Chữ ký số và mã hóa AES đã bảo vệ dữ liệu thành công trước Hacker Eve.";
             statusTag.textContent = "An toàn ✅";
         } else {
-            vCard.className = "p-8 rounded-[2.5rem] border-4 flex flex-col items-center gap-6 text-center shadow-[0_0_100px_rgba(0,0,0,0.3)] bg-red-500/10 border-red-500/30";
-            vIcon.className = "w-24 h-24 rounded-full flex items-center justify-center text-white bg-red-500";
+            vCard.className = "p-8 rounded-[2.5rem] border-4 flex flex-col items-center gap-6 text-center shadow-[0_0_100px_rgba(0,0,0,0.3)] bg-red-500/10 border-red-500/30 w-full";
+            vIcon.className = "w-24 h-24 rounded-full flex items-center justify-center text-white bg-red-500 shrink-0";
             vIcon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>`;
             vTitle.textContent = "PHÁT HIỆN TẤN CÔNG NGUY HIỂM";
             vTitle.className = "text-4xl font-black uppercase tracking-tighter text-red-500";
-            vDesc.textContent = "Cảnh báo! Gói tin đã bị Hacker Eve can thiệp. Quy trình xác thực của Bob đã chặn dữ liệu độc hại kịp thời.";
+            
+            let reasonHTML = `<div class="bg-red-500/20 border border-red-500/30 p-5 rounded-2xl text-left w-full max-w-2xl mt-2 mx-auto">
+                <div class="text-[10px] font-black text-red-400 uppercase tracking-widest mb-3 border-b border-red-500/20 pb-2">NGUYÊN NHÂN TỪ CHỐI GÓI TIN:</div>
+                <ul class="space-y-4 text-sm text-slate-300">`;
+            
+            if (state.isTamperedData) {
+                reasonHTML += `<li class="flex items-start gap-3">
+                    <span class="text-red-500 text-lg leading-none mt-0.5">✖</span>
+                    <div>
+                        <strong class="text-white text-base">Sai ở Lớp 1 (Mã hóa AES-GCM): Lỗi toàn vẹn dữ liệu.</strong><br/>
+                        <span class="text-slate-400 text-xs leading-relaxed">Bob tính toán lại Authentication Tag nhưng không khớp với Tag được đính kèm. Dữ liệu đã bị hacker (Eve) lật bit dọc đường.</span>
+                    </div>
+                </li>`;
+            }
+            if (state.isTamperedSig) {
+                reasonHTML += `<li class="flex items-start gap-3">
+                    <span class="text-red-500 text-lg leading-none mt-0.5">✖</span>
+                    <div>
+                        <strong class="text-white text-base">Sai ở Lớp 2 (Chữ ký ECDSA): Chữ ký giả mạo.</strong><br/>
+                        <span class="text-slate-400 text-xs leading-relaxed">Dùng Public Key của Alice để Verify nhưng phép toán thất bại. Kẻ gian (Eve) đã xóa chữ ký thật và chèn chữ ký rác vào.</span>
+                    </div>
+                </li>`;
+            }
+            reasonHTML += `</ul>
+            <button onclick="document.getElementById('security-audit').scrollIntoView({behavior: 'smooth'})" class="mt-5 px-4 py-3 bg-red-500/20 hover:bg-red-500/40 text-red-300 text-xs font-bold rounded-xl transition-all w-full flex items-center justify-center gap-2 border border-red-500/30">
+                👇 XEM BÁO CÁO CHI TIẾT SỰ KHÁC BIỆT MÃ HEX BÊN DƯỚI 👇
+            </button>
+            </div>`;
+            
+            vDesc.innerHTML = "Cảnh báo! Gói tin đã bị Hacker Eve can thiệp. Quy trình xác thực nhiều lớp của Bob đã chặn đứng dữ liệu độc hại kịp thời.<br/>" + reasonHTML;
             statusTag.textContent = "BỊ TẤN CÔNG ⚠️";
         }
     }
@@ -414,9 +443,14 @@ import SimulationLayout from '../layouts/SimulationLayout.astro';
         const audit1Desc = document.getElementById('audit-1-desc');
         const securityAudit = document.getElementById('security-audit');
         
-        tagOrigEl.textContent = "0x" + originalTag.toUpperCase();
+        tagOrigEl.innerHTML = "0x" + originalTag.toUpperCase();
         const calcTag = state.isTamperedData ? (originalTag.slice(0, 30) + "FF") : originalTag;
-        tagRecvEl.textContent = "0x" + calcTag.toUpperCase();
+        
+        if (state.isTamperedData) {
+            tagRecvEl.innerHTML = "0x" + originalTag.slice(0, 30).toUpperCase() + "<span class='text-red-500 bg-red-500/20 font-black px-1 rounded animate-pulse'>FF</span>";
+        } else {
+            tagRecvEl.innerHTML = "0x" + calcTag.toUpperCase();
+        }
         
         mTagCalc.textContent = "0x" + calcTag.toUpperCase();
         mTagCalc.classList.add(state.isTamperedData ? 'text-red-400' : 'text-emerald-400');
@@ -439,6 +473,7 @@ import SimulationLayout from '../layouts/SimulationLayout.astro';
         s1.textContent = "GIẢI MÃ THẤT BẠI ❌";
         s1.className = "py-2 text-[10px] font-black text-center border-t border-white/5 text-red-500 uppercase font-mono";
         
+        const securityAudit = document.getElementById('security-audit');
         securityAudit.classList.remove('hidden');
         const audit1Res = document.getElementById('audit-1-res');
         const audit1Desc = document.getElementById('audit-1-desc');
@@ -459,12 +494,17 @@ import SimulationLayout from '../layouts/SimulationLayout.astro';
         const sigOrigEl = document.getElementById('sig-orig');
         const sigRecvEl = document.getElementById('sig-recv');
         
-        const trueSig = decryptedPayload.s;
-        const fakeSig = "30440220" + "F".repeat(64); // Fake DER-ish signature
+        const trueSig = state.signatureHex;
+        const fakeSig = "30440220" + "F".repeat(64); 
         
         const currentSigHex = state.isTamperedSig ? fakeSig : trueSig;
-        sigOrigEl.textContent = trueSig.slice(0, 32) + "...";
-        sigRecvEl.textContent = currentSigHex.slice(0, 32) + "...";
+        sigOrigEl.innerHTML = trueSig.slice(0, 32) + "...";
+        
+        if (state.isTamperedSig) {
+            sigRecvEl.innerHTML = `<span class='text-red-500 bg-red-500/20 font-black px-1 rounded animate-pulse'>${currentSigHex.slice(0, 32)}...</span>`;
+        } else {
+            sigRecvEl.innerHTML = currentSigHex.slice(0, 32) + "...";
+        }
 
         // Update Math Engine: ECDSA
         const parsed = parseDER(currentSigHex);
@@ -545,12 +585,41 @@ import SimulationLayout from '../layouts/SimulationLayout.astro';
         vDesc.textContent = "Bob đã nhận được thông điệp gốc từ Alice. Chữ ký số và mã hóa AES đã bảo vệ dữ liệu thành công trước Hacker Eve.";
         statusTag.textContent = "An toàn ✅";
     } else {
-        vCard.className = "p-8 rounded-[2.5rem] border-4 flex flex-col items-center gap-6 text-center shadow-[0_0_100px_rgba(0,0,0,0.3)] bg-red-500/10 border-red-500/30";
-        vIcon.className = "w-24 h-24 rounded-full flex items-center justify-center text-white bg-red-500";
+        vCard.className = "p-8 rounded-[2.5rem] border-4 flex flex-col items-center gap-6 text-center shadow-[0_0_100px_rgba(0,0,0,0.3)] bg-red-500/10 border-red-500/30 w-full";
+        vIcon.className = "w-24 h-24 rounded-full flex items-center justify-center text-white bg-red-500 shrink-0";
         vIcon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>`;
         vTitle.textContent = "PHÁT HIỆN TẤN CÔNG NGUY HIỂM";
         vTitle.className = "text-4xl font-black uppercase tracking-tighter text-red-500";
-        vDesc.textContent = "Cảnh báo! Gói tin đã bị Hacker Eve can thiệp. Quy trình xác thực của Bob đã chặn dữ liệu độc hại kịp thời.";
+        
+        let reasonHTML = `<div class="bg-red-500/20 border border-red-500/30 p-5 rounded-2xl text-left w-full max-w-2xl mt-2 mx-auto">
+            <div class="text-[10px] font-black text-red-400 uppercase tracking-widest mb-3 border-b border-red-500/20 pb-2">NGUYÊN NHÂN TỪ CHỐI GÓI TIN:</div>
+            <ul class="space-y-4 text-sm text-slate-300">`;
+        
+        if (state.isTamperedData) {
+            reasonHTML += `<li class="flex items-start gap-3">
+                <span class="text-red-500 text-lg leading-none mt-0.5">✖</span>
+                <div>
+                    <strong class="text-white text-base">Sai ở Lớp 1 (Mã hóa AES-GCM): Lỗi toàn vẹn dữ liệu.</strong><br/>
+                    <span class="text-slate-400 text-xs leading-relaxed">Bob tính toán lại Authentication Tag nhưng không khớp với Tag được đính kèm. Dữ liệu đã bị hacker (Eve) lật bit dọc đường.</span>
+                </div>
+            </li>`;
+        }
+        if (state.isTamperedSig) {
+            reasonHTML += `<li class="flex items-start gap-3">
+                <span class="text-red-500 text-lg leading-none mt-0.5">✖</span>
+                <div>
+                    <strong class="text-white text-base">Sai ở Lớp 2 (Chữ ký ECDSA): Chữ ký giả mạo.</strong><br/>
+                    <span class="text-slate-400 text-xs leading-relaxed">Dùng Public Key của Alice để Verify nhưng phép toán đường cong elliptic không khớp. Kẻ gian đã xóa chữ ký thật và chèn chữ ký rác vào.</span>
+                </div>
+            </li>`;
+        }
+        reasonHTML += `</ul>
+        <button onclick="document.getElementById('security-audit').scrollIntoView({behavior: 'smooth'})" class="mt-5 px-4 py-3 bg-red-500/20 hover:bg-red-500/40 text-red-300 text-xs font-bold rounded-xl transition-all w-full flex items-center justify-center gap-2 border border-red-500/30">
+            👇 XEM BÁO CÁO CHI TIẾT SỰ KHÁC BIỆT MÃ HEX BÊN DƯỚI 👇
+        </button>
+        </div>`;
+
+        vDesc.innerHTML = "Cảnh báo! Gói tin đã bị Hacker Eve can thiệp. Quy trình xác thực nhiều lớp của Bob đã chặn đứng dữ liệu độc hại kịp thời.<br/>" + reasonHTML;
         statusTag.textContent = "BỊ TẤN CÔNG ⚠️";
     }
 
